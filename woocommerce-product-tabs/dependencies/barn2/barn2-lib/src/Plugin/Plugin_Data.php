@@ -10,7 +10,6 @@ use Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Lib\Service\Core_Service;
  * @author    Barn2 Plugins <support@barn2.com>
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
- * @internal
  */
 class Plugin_Data implements Core_Service
 {
@@ -47,13 +46,13 @@ class Plugin_Data implements Core_Service
      */
     public function get_plugin_data(?string $property = null)
     {
-        if (\is_null($this->plugin_data)) {
-            if (!\function_exists('get_plugin_data')) {
+        if (is_null($this->plugin_data)) {
+            if (!function_exists('get_plugin_data')) {
                 require_once \ABSPATH . 'wp-admin/includes/plugin.php';
             }
-            $this->plugin_data = \get_plugin_data($this->plugin->get_file(), \false, \false);
+            $this->plugin_data = get_plugin_data($this->plugin->get_file(), \false, \false);
         }
-        if (!\is_null($property)) {
+        if (!is_null($property)) {
             return $this->plugin_data[$property] ?? '';
         }
         return $this->plugin_data;

@@ -10,7 +10,6 @@ namespace Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Setup_Wizard;
 
 /**
  * Utility methods.
- * @internal
  */
 class Util
 {
@@ -29,7 +28,7 @@ class Util
             $values[] = ['value' => '', 'label' => __('Select an option', 'barn2-setup-wizard')];
         }
         foreach ($array as $key => $value) {
-            $values[] = ['value' => $key, 'label' => \html_entity_decode($value)];
+            $values[] = ['value' => $key, 'label' => html_entity_decode($value)];
         }
         return $values;
     }
@@ -44,7 +43,7 @@ class Util
     {
         $values = [];
         foreach ($array as $key => $value) {
-            $values[] = ['value' => \strval($key), 'label' => \html_entity_decode($value)];
+            $values[] = ['value' => strval($key), 'label' => html_entity_decode($value)];
         }
         return $values;
     }
@@ -56,11 +55,31 @@ class Util
      */
     public static function clean($var)
     {
-        if (\is_array($var)) {
-            return \array_map([__CLASS__, 'clean'], $var);
+        if (is_array($var)) {
+            return array_map([__CLASS__, 'clean'], $var);
         } else {
-            return \is_scalar($var) ? \sanitize_text_field($var) : $var;
+            return is_scalar($var) ? sanitize_text_field($var) : $var;
         }
+    }
+    public static function get_barn2_api_url()
+    {
+        return apply_filters('barn2_api_url', 'https://api.barn2.com');
+    }
+    public static function get_barn2_website_url()
+    {
+        return apply_filters('barn2_website_url', 'https://barn2.com');
+    }
+    public static function get_barn2_upsell_endpoint_url()
+    {
+        return apply_filters('barn2_upsell_endpoint_url', untrailingslashit(static::get_barn2_api_url() . '/wp-json/upsell/v1/get/'));
+    }
+    public static function get_barn2_license_validation_endpoint_url()
+    {
+        return apply_filters('barn2_upsell_endpoint_url', untrailingslashit(static::get_barn2_api_url() . '/wp-json/upsell/v1/validate/'));
+    }
+    public static function get_barn2_upsell_settings_endpoint_url()
+    {
+        return apply_filters('barn2_upsell_endpoint_url', untrailingslashit(static::get_barn2_api_url() . '/wp-json/upsell/v1/settings/'));
     }
     /**
      * Retrieve an option from the database
@@ -72,9 +91,9 @@ class Util
      */
     public static function get_wc_option(string $option_name, string $type = '')
     {
-        $value = \get_option($option_name);
+        $value = get_option($option_name);
         if ('checkbox' === $type) {
-            $value = \in_array($value, ['yes', 'true', \true], \true);
+            $value = in_array($value, ['yes', 'true', \true], \true);
         }
         return $value;
     }
@@ -94,7 +113,7 @@ class Util
             if (!$setting_id) {
                 continue;
             }
-            if (\in_array($setting_id, $pluck)) {
+            if (in_array($setting_id, $pluck)) {
                 $type = $setting['type'];
                 if ($setting['type'] === 'sectionend') {
                     continue;
@@ -143,19 +162,19 @@ class Util
     public static function license_is_access_pass($plugin, $license_key)
     {
         $is_access_pass = \false;
-        $rest_url = 'https://api.barn2.com/wp-json/upsell/v1/validate/';
+        $rest_url = static::get_barn2_license_validation_endpoint_url();
         $args = ['license' => $license_key];
-        $request = \wp_remote_get(\add_query_arg($args, $rest_url));
-        $response = \wp_remote_retrieve_body($request);
-        $response = \json_decode($response, \true);
-        if (\wp_remote_retrieve_response_code($request) === 200) {
+        $request = wp_remote_get(add_query_arg($args, $rest_url));
+        $response = wp_remote_retrieve_body($request);
+        $response = json_decode($response, \true);
+        if (wp_remote_retrieve_response_code($request) === 200) {
             if (isset($response['is_access_pass'])) {
                 $is_access_pass = (bool) $response['is_access_pass'];
                 $item_id = $plugin->get_id();
                 if ($is_access_pass === \true) {
-                    \update_option("barn2_plugin_{$item_id}_license_is_pass", \true);
+                    update_option("barn2_plugin_{$item_id}_license_is_pass", \true);
                 } else {
-                    \delete_option("barn2_plugin_{$item_id}_license_is_pass");
+                    delete_option("barn2_plugin_{$item_id}_license_is_pass");
                 }
             }
         }
@@ -169,17 +188,17 @@ class Util
      */
     public static function get_remote_utm_id($plugin)
     {
-        $utm_id = \get_transient($plugin->get_slug() . '_remote_utm_id');
-        $rest_url = 'https://api.barn2.com/wp-json/upsell/v1/get/';
+        $utm_id = get_transient($plugin->get_slug() . '_remote_utm_id');
+        $rest_url = static::get_barn2_upsell_endpoint_url();
         $args = ['plugin' => $plugin->get_slug()];
         if (\false === $utm_id) {
-            $request = \wp_remote_get(\add_query_arg($args, $rest_url));
-            $response = \wp_remote_retrieve_body($request);
-            $response = \json_decode($response, \true);
-            if (\wp_remote_retrieve_response_code($request) === 200) {
+            $request = wp_remote_get(add_query_arg($args, $rest_url));
+            $response = wp_remote_retrieve_body($request);
+            $response = json_decode($response, \true);
+            if (wp_remote_retrieve_response_code($request) === 200) {
                 if (isset($response['utm_prefix'])) {
                     $utm_id = $response['utm_prefix'];
-                    \set_transient($plugin->get_slug() . '_remote_utm_id', $utm_id, \WEEK_IN_SECONDS);
+                    set_transient($plugin->get_slug() . '_remote_utm_id', $utm_id, \WEEK_IN_SECONDS);
                 }
             }
         }
@@ -193,14 +212,14 @@ class Util
      */
     public static function get_pages($exclude_empty = \false)
     {
-        $pages = \get_pages();
+        $pages = get_pages();
         $options = [];
         if (!$exclude_empty) {
             $options[] = '';
         }
-        if (!empty($pages) && \is_array($pages)) {
+        if (!empty($pages) && is_array($pages)) {
             foreach ($pages as $page) {
-                $options[\absint($page->ID)] = \esc_html($page->post_title);
+                $options[absint($page->ID)] = esc_html($page->post_title);
             }
         }
         return $options;
@@ -216,11 +235,11 @@ class Util
      */
     public static function generate_utm_url(string $url, $utm_id = \false, $plugin = \false)
     {
-        $utm = $plugin ? \get_transient($plugin->get_slug() . '_remote_utm_id') : \false;
+        $utm = $plugin ? get_transient($plugin->get_slug() . '_remote_utm_id') : \false;
         if (!$utm) {
             $utm = $utm_id;
         }
-        return \add_query_arg(['utm_source' => 'wizard', 'utm_medium' => 'wizard', 'utm_campaign' => "{$utm}-wizard", 'utm_content' => "{$utm}-wizard"], $url);
+        return add_query_arg(['utm_source' => 'wizard', 'utm_medium' => 'wizard', 'utm_campaign' => "{$utm}-wizard", 'utm_content' => "{$utm}-wizard"], $url);
     }
     /**
      * Retrieves an array of internal WP dependencies for bundled JS files.
@@ -232,15 +251,15 @@ class Util
     public static function get_script_dependencies($plugin, $filename)
     {
         $script_dependencies_file = $plugin->get_dir_path() . 'assets/js/wp-dependencies.json';
-        $script_dependencies = \file_exists($script_dependencies_file) ? \file_get_contents($script_dependencies_file) : \false;
+        $script_dependencies = file_exists($script_dependencies_file) ? file_get_contents($script_dependencies_file) : \false;
         // bail if the wp-dependencies.json file doesn't exist
         if ($script_dependencies === \false) {
             return ['dependencies' => [], 'version' => ''];
         }
-        $script_dependencies = \json_decode($script_dependencies, \true);
+        $script_dependencies = json_decode($script_dependencies, \true);
         // if the asset doesn't exist, and the path is relative to the 'js' directory then try a full path
-        if (!isset($script_dependencies[$filename]) && \strpos($filename, './assets/js') === \false && isset($script_dependencies[\sprintf('./assets/js/%s', $filename)])) {
-            $filename = \sprintf('./assets/js/%s', $filename);
+        if (!isset($script_dependencies[$filename]) && strpos($filename, './assets/js') === \false && isset($script_dependencies[sprintf('./assets/js/%s', $filename)])) {
+            $filename = sprintf('./assets/js/%s', $filename);
         }
         if (!isset($script_dependencies[$filename])) {
             return ['dependencies' => [], 'version' => ''];

@@ -12,7 +12,6 @@ use Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Lib\Service\Core_Service;
  * @author    Barn2 Plugins <support@barn2.com>
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
- * @internal
  */
 class License_Checker extends Scheduled_Task implements Schedulable, Core_Service
 {
@@ -29,7 +28,7 @@ class License_Checker extends Scheduled_Task implements Schedulable, Core_Servic
     }
     public function schedule()
     {
-        if (\apply_filters('barn2_plugin_disable_license_key_check', \false, $this->license)) {
+        if (apply_filters('barn2_plugin_disable_license_key_check', \false, $this->license)) {
             return;
         }
         parent::schedule();

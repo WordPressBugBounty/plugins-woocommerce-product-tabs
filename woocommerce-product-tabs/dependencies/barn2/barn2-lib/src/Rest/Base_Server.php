@@ -11,18 +11,17 @@ use Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Lib\Registerable;
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
  * @version   1.0
- * @internal
  */
 abstract class Base_Server implements Registerable, Rest_Server
 {
     public function register()
     {
-        \add_action('rest_api_init', [$this, 'register_routes']);
+        add_action('rest_api_init', [$this, 'register_routes']);
     }
     public function register_routes()
     {
-        if (!\current_action('rest_api_init')) {
-            \_doing_it_wrong(__METHOD__, 'This function must be called on <code>rest_api_init</code>', '1.0');
+        if (!current_action('rest_api_init')) {
+            _doing_it_wrong(__METHOD__, 'This function must be called on <code>rest_api_init</code>', '1.0');
         }
         foreach ($this->get_routes() as $route) {
             $route->register();

@@ -9,12 +9,11 @@ namespace Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Lib\Plugin\License;
  * @author    Barn2 Plugins <support@barn2.com>
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
- * @internal
  */
 interface License_API
 {
     public function activate_license($license_key, $item_id, $url);
     public function deactivate_license($license_key, $item_id, $url);
     public function check_license($license_key, $item_id, $url);
-    public function get_latest_version($license_key, $item_id, $url, $slug, $beta_testing = \false);
+    public function get_latest_version($license_key, $item_id, $url, $slug, $beta_testing = \false, $license_group = '');
 }

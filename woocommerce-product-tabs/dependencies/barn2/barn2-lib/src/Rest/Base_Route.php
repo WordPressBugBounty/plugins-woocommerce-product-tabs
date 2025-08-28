@@ -10,7 +10,6 @@ use WP_REST_Controller;
  * @author    Barn2 Plugins <support@barn2.com>
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
- * @internal
  */
 abstract class Base_Route extends WP_REST_Controller implements Route
 {

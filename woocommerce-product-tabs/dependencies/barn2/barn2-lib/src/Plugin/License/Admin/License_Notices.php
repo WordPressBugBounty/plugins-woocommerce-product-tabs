@@ -14,7 +14,6 @@ use Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Lib\Util;
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
  * @version   1.2
- * @internal
  */
 class License_Notices implements Registerable, Core_Service
 {
@@ -32,15 +31,15 @@ class License_Notices implements Registerable, Core_Service
     }
     public function register()
     {
-        \add_action('admin_init', [$this, 'add_notices'], 50);
-        \add_action('admin_enqueue_scripts', [$this, 'register_scripts']);
-        \add_action('barn2_license_activated_' . $this->plugin->get_id(), [$this, 'cleanup_transients']);
-        \add_action('wp_ajax_barn2_dismiss_notice', [$this, 'ajax_dismiss_notice']);
+        add_action('admin_init', [$this, 'add_notices'], 50);
+        add_action('admin_enqueue_scripts', [$this, 'register_scripts']);
+        add_action('barn2_license_activated_' . $this->plugin->get_id(), [$this, 'cleanup_transients']);
+        add_action('wp_ajax_barn2_dismiss_notice', [$this, 'ajax_dismiss_notice']);
     }
     public function add_notices()
     {
         // Don't add notices if we're doing a post (e.g. saving the settings) or if it's a WooCommerce plugin and WooCommerce is not installed.
-        if (isset($_SERVER['REQUEST_METHOD']) && 'POST' === $_SERVER['REQUEST_METHOD'] || $this->plugin->is_woocommerce() && !Util::is_woocommerce_active() || $this->plugin->is_edd() && !Util::is_edd_active() || \apply_filters('barn2_plugin_hide_license_notices', \false, $this->plugin)) {
+        if (isset($_SERVER['REQUEST_METHOD']) && 'POST' === $_SERVER['REQUEST_METHOD'] || $this->plugin->is_woocommerce() && !Util::is_woocommerce_active() || $this->plugin->is_edd() && !Util::is_edd_active() || apply_filters('barn2_plugin_hide_license_notices', \false, $this->plugin)) {
             return;
         }
         $license = $this->plugin->get_license();
@@ -61,8 +60,8 @@ class License_Notices implements Registerable, Core_Service
     private function maybe_add_notice($notice_type, $notice_callback)
     {
         if (!$this->is_notice_dismissed($notice_type)) {
-            \add_action('admin_enqueue_scripts', [$this, 'load_scripts']);
-            \add_action('admin_notices', $notice_callback, 50);
+            add_action('admin_enqueue_scripts', [$this, 'load_scripts']);
+            add_action('admin_notices', $notice_callback, 50);
         }
     }
     public function first_activation_notice()
@@ -73,14 +72,14 @@ class License_Notices implements Registerable, Core_Service
         $plugin_name = '<strong>' . $this->plugin->get_name() . '</strong>';
         ?>
 		<div class="notice notice-warning is-dismissible barn2-notice" data-id="<?php 
-        echo \esc_attr($this->plugin->get_id());
+        echo esc_attr($this->plugin->get_id());
         ?>" data-type="<?php 
-        echo \esc_attr(self::FIRST_ACTIVATION);
+        echo esc_attr(self::FIRST_ACTIVATION);
         ?>">
 			<p>
 				<?php 
         // phpcs:disable WordPress.Security.EscapeOutput
-        \printf(
+        printf(
             /* translators: 1: the plugin name, 2: settings link start, 3: settings link end. */
             __('Thank you for installing %1$s. To get started, please %2$s enter your license key%3$s.', 'barn2'),
             $plugin_name,
@@ -98,14 +97,14 @@ class License_Notices implements Registerable, Core_Service
         $plugin_name = '<strong>' . $this->plugin->get_name() . '</strong>';
         ?>
 		<div class="notice notice-warning is-dismissible barn2-notice" data-id="<?php 
-        echo \esc_attr($this->plugin->get_id());
+        echo esc_attr($this->plugin->get_id());
         ?>" data-type="<?php 
-        echo \esc_attr(self::EXPIRED);
+        echo esc_attr(self::EXPIRED);
         ?>">
 			<p>
 				<?php 
         // phpcs:disable WordPress.Security.EscapeOutput
-        \printf(
+        printf(
             /* translators: 1: the plugin name, 2: renewal link start, 3: renewal link end. */
             __('Your license key for %1$s has expired. %2$sClick here to renew for 20%% discount%3$s.', 'barn2'),
             $plugin_name,
@@ -120,17 +119,17 @@ class License_Notices implements Registerable, Core_Service
     }
     public function disabled_license_notice()
     {
-        $plugin_name = '<strong>' . \esc_html($this->plugin->get_name()) . '</strong>';
+        $plugin_name = '<strong>' . esc_html($this->plugin->get_name()) . '</strong>';
         ?>
 		<div class="notice notice-error is-dismissible barn2-notice" data-id="<?php 
-        echo \esc_attr($this->plugin->get_id());
+        echo esc_attr($this->plugin->get_id());
         ?>" data-type="<?php 
-        echo \esc_attr(self::DISABLED);
+        echo esc_attr(self::DISABLED);
         ?>">
 			<p>
 				<?php 
         // phpcs:disable WordPress.Security.EscapeOutput
-        \printf(
+        printf(
             /* translators: 1: the plugin name, 2: renewal link start, 3: renewal link end. */
             __('You no longer have a valid license for %1$s. Please %2$spurchase a new license key%3$s to continue using the plugin.', 'barn2'),
             $plugin_name,
@@ -151,14 +150,14 @@ class License_Notices implements Registerable, Core_Service
         $plugin_name = '<strong>' . $this->plugin->get_name() . '</strong>';
         ?>
 		<div class="notice notice-error is-dismissible barn2-notice" data-id="<?php 
-        echo \esc_attr($this->plugin->get_id());
+        echo esc_attr($this->plugin->get_id());
         ?>" data-type="<?php 
-        echo \esc_attr(self::SITE_MOVED);
+        echo esc_attr(self::SITE_MOVED);
         ?>">
 			<p>
 				<?php 
         // phpcs:disable WordPress.Security.EscapeOutput
-        \printf(
+        printf(
             /* translators: 1: the plugin name, 2: settings link start, 3: settings link end. */
             __('%1$s - your site has moved to a new domain. Please %2$sreactivate your license key%3$s.', 'barn2'),
             $plugin_name,
@@ -174,26 +173,26 @@ class License_Notices implements Registerable, Core_Service
     public function cleanup_transients()
     {
         // Clear notice dismissal transients when license is activated.
-        \delete_transient($this->get_notice_dismissed_transient_name(self::EXPIRED));
-        \delete_transient($this->get_notice_dismissed_transient_name(self::DISABLED));
-        \delete_transient($this->get_notice_dismissed_transient_name(self::SITE_MOVED));
+        delete_transient($this->get_notice_dismissed_transient_name(self::EXPIRED));
+        delete_transient($this->get_notice_dismissed_transient_name(self::DISABLED));
+        delete_transient($this->get_notice_dismissed_transient_name(self::SITE_MOVED));
     }
     public function register_scripts()
     {
-        if (!\wp_script_is('barn2-notices', 'registered')) {
-            \wp_register_script('barn2-notices', \plugins_url('dependencies/barn2/barn2-lib/build/js/admin/barn2-notices.js', $this->plugin->get_file()), ['jquery'], $this->plugin->get_version(), \true);
+        if (!wp_script_is('barn2-notices', 'registered')) {
+            wp_register_script('barn2-notices', plugins_url('dependencies/barn2/barn2-lib/build/js/admin/barn2-notices.js', $this->plugin->get_file()), ['jquery'], $this->plugin->get_version(), \true);
         }
     }
     public function load_scripts()
     {
-        \wp_enqueue_script('barn2-notices');
+        wp_enqueue_script('barn2-notices');
     }
     public function ajax_dismiss_notice()
     {
-        $item_id = \filter_input(\INPUT_POST, 'id', \FILTER_VALIDATE_INT);
-        $notice_type = \filter_input(\INPUT_POST, 'type', \FILTER_SANITIZE_SPECIAL_CHARS);
+        $item_id = filter_input(\INPUT_POST, 'id', \FILTER_VALIDATE_INT);
+        $notice_type = filter_input(\INPUT_POST, 'type', \FILTER_SANITIZE_SPECIAL_CHARS);
         // Check data is valid.
-        if (!$item_id || !\in_array($notice_type, [self::FIRST_ACTIVATION, self::EXPIRED, self::DISABLED, self::SITE_MOVED], \true)) {
+        if (!$item_id || !in_array($notice_type, [self::FIRST_ACTIVATION, self::EXPIRED, self::DISABLED, self::SITE_MOVED], \true)) {
             return;
         }
         if ($item_id === $this->plugin->get_id()) {
@@ -202,11 +201,11 @@ class License_Notices implements Registerable, Core_Service
     }
     private function dismiss_notice($notice_type)
     {
-        \set_transient($this->get_notice_dismissed_transient_name($notice_type), \true);
+        set_transient($this->get_notice_dismissed_transient_name($notice_type), \true);
     }
     private function is_notice_dismissed($notice_type)
     {
-        return (bool) \get_transient($this->get_notice_dismissed_transient_name($notice_type));
+        return (bool) get_transient($this->get_notice_dismissed_transient_name($notice_type));
     }
     private function get_notice_dismissed_transient_name($notice_type)
     {

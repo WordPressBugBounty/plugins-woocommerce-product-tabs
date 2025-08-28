@@ -11,7 +11,6 @@ use Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Lib\Plugin\Admin\Notice_Provi
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
  * @version   1.2
- * @internal
  */
 interface Plugin
 {
@@ -117,4 +116,10 @@ interface Plugin
      * @return Requirements
      */
     public function requirements();
+    /**
+     * Get the license group for this plugin.
+     *
+     * @return string The license group.
+     */
+    public function get_license_group();
 }

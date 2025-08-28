@@ -20,7 +20,6 @@ namespace Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\WPTRT\AdminNotices;
  * Each notice is a new instance of the object.
  *
  * @since 1.0.0
- * @internal
  */
 class Notices
 {
@@ -42,7 +41,7 @@ class Notices
     public function boot()
     {
         // Add the notice.
-        \add_action('admin_notices', [$this, 'the_notices']);
+        add_action('admin_notices', [$this, 'the_notices']);
     }
     /**
      * Add a notice.

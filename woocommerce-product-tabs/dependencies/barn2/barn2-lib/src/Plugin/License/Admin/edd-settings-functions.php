@@ -7,8 +7,7 @@ use Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Lib\Admin\Settings_API_Helper
 if (!\defined('ABSPATH')) {
     exit;
 }
-if (!\function_exists('edd_hidden_callback')) {
-    /** @internal */
+if (!\function_exists('edd_hidden_callback') && !\function_exists('Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\edd_hidden_callback')) {
     function edd_hidden_callback($args)
     {
         if (isset($args['id'], $args['default'])) {
@@ -16,8 +15,7 @@ if (!\function_exists('edd_hidden_callback')) {
         }
     }
 }
-if (!\function_exists('edd_barn2_license_callback')) {
-    /** @internal */
+if (!\function_exists('edd_barn2_license_callback') && !\function_exists('Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\edd_barn2_license_callback')) {
     function edd_barn2_license_callback($args)
     {
         // Change setting back to a 'text' input. We set the type to 'barn2_license' initially so we can provide our own callback.

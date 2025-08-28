@@ -10,7 +10,6 @@ namespace Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Setup_Wizard;
 
 /**
  * Determine if the setup wizard should be displayed after plugin's activation.
- * @internal
  */
 class Starter
 {
@@ -52,7 +51,7 @@ class Starter
      */
     public function detected()
     {
-        return \get_transient("_{$this->slug}_activation_redirect");
+        return get_transient("_{$this->slug}_activation_redirect");
     }
     /**
      * Creates a short timed transient which is used to detect if the wizard should start.
@@ -61,7 +60,7 @@ class Starter
      */
     public function create_transient()
     {
-        \set_transient("_{$this->slug}_activation_redirect", \true, 30);
+        set_transient("_{$this->slug}_activation_redirect", \true, 30);
     }
     /**
      * Delete the short timed transient.
@@ -70,7 +69,7 @@ class Starter
      */
     public function delete_transient()
     {
-        \delete_transient("_{$this->slug}_activation_redirect");
+        delete_transient("_{$this->slug}_activation_redirect");
     }
     /**
      * Redirect the user to the setup wizard.
@@ -79,8 +78,8 @@ class Starter
      */
     public function redirect()
     {
-        $url = \add_query_arg(['page' => $this->slug], \admin_url('admin.php'));
-        \wp_safe_redirect($url);
+        $url = add_query_arg(['page' => $this->slug], admin_url('admin.php'));
+        wp_safe_redirect($url);
         exit;
     }
 }

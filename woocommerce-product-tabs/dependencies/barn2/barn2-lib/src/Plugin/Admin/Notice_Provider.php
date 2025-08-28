@@ -17,7 +17,6 @@ use wpdb;
  * @author    Barn2 Plugins <support@barn2.com>
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
- * @internal
  */
 class Notice_Provider implements Registerable, Core_Service, Conditional
 {
@@ -49,7 +48,7 @@ class Notice_Provider implements Registerable, Core_Service, Conditional
      */
     public function is_required()
     {
-        return \is_admin();
+        return is_admin();
     }
     /**
      * {@inheritDoc}
@@ -86,7 +85,7 @@ class Notice_Provider implements Registerable, Core_Service, Conditional
             case $error instanceof wpdb:
                 $message = $error->last_error;
                 break;
-            case \is_string($error):
+            case is_string($error):
                 $message = $error;
                 break;
         }
@@ -134,15 +133,15 @@ class Notice_Provider implements Registerable, Core_Service, Conditional
      */
     private function add_notice($id, $title, $message, $options = [])
     {
-        $options = \wp_parse_args($options, ['screens' => $this->get_screens()]);
+        $options = wp_parse_args($options, ['screens' => $this->get_screens()]);
         $this->notices->add($id, $title, $message, $options);
     }
     private function get_screens()
     {
         $screens = ['plugins'];
-        $url = \wp_parse_url($this->plugin->get_settings_page_url());
+        $url = wp_parse_url($this->plugin->get_settings_page_url());
         $screen = $url['path'] ?? '';
-        $query = \wp_parse_args($url['query'] ?? '');
+        $query = wp_parse_args($url['query'] ?? '');
         $page = $query['page'] ?? '';
         $post_type = $query['post_type'] ?? '';
         switch ($screen) {

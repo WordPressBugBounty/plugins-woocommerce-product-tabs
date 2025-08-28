@@ -11,7 +11,6 @@ namespace Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Setup_Wizard;
 use Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Setup_Wizard\Interfaces\Pluggable;
 /**
  * Handles configuration of a setup wizard step.
- * @internal
  */
 abstract class Step implements Pluggable
 {
@@ -77,14 +76,14 @@ abstract class Step implements Pluggable
      */
     public function __construct()
     {
-        \add_action('after_setup_theme', [$this, 'init']);
+        add_action('after_setup_theme', [$this, 'init']);
     }
     /**
      * Initialize the step.
      *
      * @return void
      */
-    public abstract function init();
+    abstract public function init();
     /**
      * Set the request object.
      *
@@ -150,7 +149,7 @@ abstract class Step implements Pluggable
      *
      * @return array
      */
-    public abstract function setup_fields();
+    abstract public function setup_fields();
     /**
      * Get the list of defined fields for the step.
      *
@@ -301,11 +300,16 @@ abstract class Step implements Pluggable
         $values = [];
         foreach ($this->get_fields() as $key => $field) {
             $disallowed = ['title', 'heading', 'list', 'image'];
-            if (\in_array($field['type'], $disallowed)) {
+            if (in_array($field['type'], $disallowed, \true)) {
                 continue;
             }
-            if (isset($_POST[$key]) && !empty($_POST[$key])) {
-                $values[$key] = Util::clean($_POST[$key]);
+            // Using wp_unslash since WP adds slashes to all $_POST data. Nonce verification
+            // is expected earlier via the REST API permission callback.
+            if (isset($_POST[$key]) && '' !== $_POST[$key]) {
+                // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                $raw = wp_unslash($_POST[$key]);
+                // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                $values[$key] = Util::clean($raw);
             }
         }
         return $values;
@@ -315,5 +319,5 @@ abstract class Step implements Pluggable
      *
      * @return \WP_REST_Response
      */
-    public abstract function submit(array $values);
+    abstract public function submit(array $values);
 }

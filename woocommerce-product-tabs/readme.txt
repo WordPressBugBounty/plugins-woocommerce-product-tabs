@@ -5,7 +5,7 @@ Tags: product tabs for woocommerce, woocommerce custom tabs, woocommerce tabs, w
 Requires PHP: 7.4
 Requires at least: 6.1
 Tested up to: 6.8
-Stable tag: 2.1.11
+Stable tag: 2.1.12
 License: GNU General Public License v3.0
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 Donate link: https://barn2.com
@@ -130,9 +130,10 @@ Please report any security bugs through the [Patchstack Vulnerability Disclosure
 
 == Changelog ==
 
-= 2.1.11=
-Release date 21 April 2025
+= 2.1.12=
+Release date 28 August 2025
 
-* Dev: Updated internal libraries and tested up to WordPress 6.8 and WooCommerce 9.8.1
+* Dev: Updated internal libraries and tested up to WooCommerce 10.1.1
+* Dev: Added the translation files
 
 See changelog.txt for more details.

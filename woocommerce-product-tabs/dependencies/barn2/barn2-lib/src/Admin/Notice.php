@@ -10,7 +10,6 @@ namespace Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Lib\Admin;
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
  * @version   1.0
- * @internal
  */
 class Notice
 {
@@ -63,18 +62,18 @@ class Notice
      */
     public function __construct($id, $title, $message, $options = [])
     {
-        $this->id = \sanitize_key($id);
+        $this->id = sanitize_key($id);
         $this->title = $title;
         $this->message = $message;
-        $this->options = \wp_parse_args($options, $this->options);
+        $this->options = wp_parse_args($options, $this->options);
         if (!$this->id || !$this->message) {
             return;
         }
         if ($this->options['dismissible'] === \true && !$this->is_dismissed()) {
             // Enqueue notices script to handle dismissables notices.
-            \add_action('admin_enqueue_scripts', [$this, 'load_scripts']);
+            add_action('admin_enqueue_scripts', [$this, 'load_scripts']);
             // Handle AJAX requests to dismiss the notice.
-            \add_action('wp_ajax_barn2_dismiss_notice', [$this, 'ajax_maybe_dismiss_notice'], 1);
+            add_action('wp_ajax_barn2_dismiss_notice', [$this, 'ajax_maybe_dismiss_notice'], 1);
         }
     }
     /**
@@ -82,7 +81,7 @@ class Notice
      */
     public function load_scripts()
     {
-        \wp_enqueue_script('barn2-notices');
+        wp_enqueue_script('barn2-notices');
     }
     /**
      * Gets the notice markup.
@@ -92,27 +91,27 @@ class Notice
     public function get_notice()
     {
         // Use a deprecated notice function if WP is older than 6.4.0.
-        if (!\function_exists('wp_get_admin_notice')) {
+        if (!function_exists('wp_get_admin_notice')) {
             return $this->get_notice_deprecated();
         }
         $title = $this->get_title();
         $message = $this->message;
         $buttons = $this->get_buttons();
-        $additional_classes = \array_merge(['barn2-notice'], $this->options['additional_classes']);
+        $additional_classes = array_merge(['barn2-notice'], $this->options['additional_classes']);
         $attributes = $this->options['attributes'];
         $paragraph_wrap = $this->options['paragraph_wrap'];
         // Adds a nonce to the notice data attribute to be used on the AJAX cal if the notice is dismissible.
         if ($this->options['dismissible'] === \true && !$this->is_dismissed()) {
-            $attributes = \array_merge($attributes, ['data-nonce' => \wp_create_nonce('barn2_dismiss_admin_notice_' . $this->id)]);
+            $attributes = array_merge($attributes, ['data-nonce' => wp_create_nonce('barn2_dismiss_admin_notice_' . $this->id)]);
         }
         if ($title !== '' && $this->options['paragraph_wrap'] === \true) {
-            $message = \wpautop($message);
+            $message = wpautop($message);
             $paragraph_wrap = \false;
         }
         // Adds the title and the buttons to the message.
         $message = $title . $message . $buttons;
         // Gets the notice markup.
-        $notice = \wp_get_admin_notice($message, ['id' => $this->id, 'type' => $this->options['type'], 'dismissible' => $this->options['dismissible'], 'additional_classes' => $additional_classes, 'attributes' => $attributes, 'paragraph_wrap' => $paragraph_wrap]);
+        $notice = wp_get_admin_notice($message, ['id' => $this->id, 'type' => $this->options['type'], 'dismissible' => $this->options['dismissible'], 'additional_classes' => $additional_classes, 'attributes' => $attributes, 'paragraph_wrap' => $paragraph_wrap]);
         return $notice;
     }
     /**
@@ -126,8 +125,8 @@ class Notice
         $classes = 'notice barn2-notice';
         $attributes = '';
         $message = $this->message;
-        if (\is_string($this->options['type'])) {
-            $type = \trim($this->options['type']);
+        if (is_string($this->options['type'])) {
+            $type = trim($this->options['type']);
             if ($type !== '') {
                 $classes .= ' notice-' . $type;
             }
@@ -138,31 +137,31 @@ class Notice
         if ($this->options['alt_style'] === \true) {
             $classes .= ' notice-alt';
         }
-        if (\is_array($this->options['additional_classes']) && !empty($this->options['additional_classes'])) {
-            $classes .= ' ' . \implode(' ', $this->options['additional_classes']);
+        if (is_array($this->options['additional_classes']) && !empty($this->options['additional_classes'])) {
+            $classes .= ' ' . implode(' ', $this->options['additional_classes']);
         }
         // Adds a nonce to the notice data attribute to be used on the AJAX cal if the notice is dismissible.
         if ($this->options['dismissible'] === \true && !$this->is_dismissed()) {
-            $attributes = ' data-nonce="' . \wp_create_nonce('barn2_dismiss_admin_notice_' . $this->id) . '"';
+            $attributes = ' data-nonce="' . wp_create_nonce('barn2_dismiss_admin_notice_' . $this->id) . '"';
         }
-        if (\is_array($this->options['attributes']) && !empty($this->options['attributes'])) {
+        if (is_array($this->options['attributes']) && !empty($this->options['attributes'])) {
             foreach ($this->options['attributes'] as $attr => $val) {
-                if (\is_bool($val)) {
+                if (is_bool($val)) {
                     $attributes .= $val ? ' ' . $attr : '';
-                } elseif (\is_int($attr)) {
-                    $attributes .= ' ' . \esc_attr(\trim($val));
+                } elseif (is_int($attr)) {
+                    $attributes .= ' ' . esc_attr(trim($val));
                 } elseif ($val) {
-                    $attributes .= ' ' . $attr . '="' . \esc_attr(\trim($val)) . '"';
+                    $attributes .= ' ' . $attr . '="' . esc_attr(trim($val)) . '"';
                 }
             }
         }
         if ($this->options['paragraph_wrap'] === \true) {
-            $message = \wpautop($message);
+            $message = wpautop($message);
         }
         // Adds the title and the buttons to the message.
         $message = $this->get_title() . $message . $this->get_buttons();
         // Gets the notice markup.
-        $notice = \sprintf('<div id="%1$s" class="%2$s"%3$s>%4$s</div>', $this->id, $classes, $attributes, $message);
+        $notice = sprintf('<div id="%1$s" class="%2$s"%3$s>%4$s</div>', $this->id, $classes, $attributes, $message);
         return $notice;
     }
     /**
@@ -175,7 +174,7 @@ class Notice
         if (!$this->title) {
             return '';
         }
-        return \sprintf('<h2 class="notice-title">%s</h2>', \wp_strip_all_tags($this->title));
+        return sprintf('<h2 class="notice-title">%s</h2>', wp_strip_all_tags($this->title));
     }
     /**
      * Returns the buttons markup.
@@ -196,12 +195,12 @@ class Notice
             foreach ($button as $attr => $val) {
                 if ($attr === 'value') {
                     $attributes .= '';
-                } elseif (\is_bool($val)) {
+                } elseif (is_bool($val)) {
                     $attributes .= $val ? ' ' . $attr : '';
-                } elseif (\is_int($attr)) {
-                    $attributes .= ' ' . \esc_attr(\trim($val));
+                } elseif (is_int($attr)) {
+                    $attributes .= ' ' . esc_attr(trim($val));
                 } elseif ($val) {
-                    $attributes .= ' ' . $attr . '="' . \esc_attr(\trim($val)) . '"';
+                    $attributes .= ' ' . $attr . '="' . esc_attr(trim($val)) . '"';
                 }
             }
             $buttons .= '<a' . $attributes . '>' . $button['value'] . '</a>';
@@ -217,7 +216,7 @@ class Notice
         if (!$this->show()) {
             return;
         }
-        echo \wp_kses_post($this->get_notice());
+        echo wp_kses_post($this->get_notice());
     }
     /**
      * Determine if the notice should be shown or not.
@@ -227,7 +226,7 @@ class Notice
     public function show()
     {
         // Don't show if the user doesn't have the required capability.
-        if (!\current_user_can($this->options['capability'])) {
+        if (!current_user_can($this->options['capability'])) {
             return \false;
         }
         // Don't show if we're not on the right screen.
@@ -252,13 +251,13 @@ class Notice
             return \true;
         }
         // Make sure the get_current_screen function exists.
-        if (!\function_exists('get_current_screen')) {
+        if (!function_exists('get_current_screen')) {
             require_once \ABSPATH . 'wp-admin/includes/screen.php';
         }
         /** @var \WP_Screen $current_screen */
-        $current_screen = \get_current_screen();
+        $current_screen = get_current_screen();
         // Check if we're on one of the defined screens.
-        return \in_array($current_screen->id, $this->options['screens'], \true);
+        return in_array($current_screen->id, $this->options['screens'], \true);
     }
     /**
      * Run check to see if we need to dismiss the notice.
@@ -269,8 +268,8 @@ class Notice
     public function ajax_maybe_dismiss_notice()
     {
         // If dissmiss_callback is set.
-        if (\is_callable($this->options['dissmiss_callback'])) {
-            \call_user_func($this->options['dissmiss_callback'], $this->id, $this->title, $this->message, $this->options, $this);
+        if (is_callable($this->options['dissmiss_callback'])) {
+            call_user_func($this->options['dissmiss_callback'], $this->id, $this->title, $this->message, $this->options, $this);
         }
         // Early exit if we're not on a barn2_dismiss_admin_notice action.
         if (!isset($_POST['action']) || 'barn2_dismiss_notice' !== $_POST['action']) {
@@ -281,7 +280,7 @@ class Notice
             return;
         }
         // Make sure nonce is OK.
-        \check_ajax_referer('barn2_dismiss_admin_notice_' . $this->id, 'nonce', \true);
+        check_ajax_referer('barn2_dismiss_admin_notice_' . $this->id, 'nonce', \true);
         // Dismisses the notice.
         $this->dismiss_notice();
     }
@@ -293,10 +292,10 @@ class Notice
     public function dismiss_notice()
     {
         if ($this->options['scope'] === 'user') {
-            \update_user_meta(\get_current_user_id(), $this->options['option_prefix'] . '_' . $this->id, \true);
+            update_user_meta(get_current_user_id(), $this->options['option_prefix'] . '_' . $this->id, \true);
             return;
         }
-        \update_option($this->options['option_prefix'] . '_' . $this->id, \true, \false);
+        update_option($this->options['option_prefix'] . '_' . $this->id, \true, \false);
     }
     /**
      * Checks if the notice has been dismissed or not.
@@ -307,8 +306,8 @@ class Notice
     {
         // Check if the notice has been dismissed when using user-meta.
         if ($this->options['scope'] === 'user') {
-            return \get_user_meta(\get_current_user_id(), $this->options['option_prefix'] . '_' . $this->id, \true);
+            return get_user_meta(get_current_user_id(), $this->options['option_prefix'] . '_' . $this->id, \true);
         }
-        return \get_option($this->options['option_prefix'] . '_' . $this->id);
+        return get_option($this->options['option_prefix'] . '_' . $this->id);
     }
 }

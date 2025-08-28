@@ -1,3 +1,9 @@
+= 2.1.12=
+Release date 28 August 2025
+
+* Dev: Updated internal libraries and tested up to WooCommerce 10.1.1
+* Dev: Added the translation files
+
 = 2.1.11=
 Release date 21 April 2025
 

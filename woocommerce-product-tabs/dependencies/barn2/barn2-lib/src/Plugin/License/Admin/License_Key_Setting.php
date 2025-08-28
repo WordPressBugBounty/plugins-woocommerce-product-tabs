@@ -15,7 +15,6 @@ use WC_Admin_Settings;
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
  * @version   1.2
- * @internal
  */
 class License_Key_Setting implements Registerable, License_Setting, Core_Service
 {
@@ -36,15 +35,15 @@ class License_Key_Setting implements Registerable, License_Setting, Core_Service
     }
     public function register()
     {
-        \add_action('admin_init', [$this, 'process_license_action'], 5);
+        add_action('admin_init', [$this, 'process_license_action'], 5);
         if ($this->is_edd) {
             // Include EDD settings callbacks.
             include_once __DIR__ . '/edd-settings-functions.php';
             // Handle the license settings message for EDD.
-            \add_filter('sanitize_option_edd_settings', [$this, 'handle_edd_license_message'], 20);
-        } elseif ($this->is_woocommerce && !\has_action('woocommerce_admin_field_hidden')) {
+            add_filter('sanitize_option_edd_settings', [$this, 'handle_edd_license_message'], 20);
+        } elseif ($this->is_woocommerce && !has_action('woocommerce_admin_field_hidden')) {
             // Add hidden field to WooCommerce for license key override setting.
-            \add_action('woocommerce_admin_field_hidden', [Settings_API_Helper::class, 'settings_field_hidden']);
+            add_action('woocommerce_admin_field_hidden', [Settings_API_Helper::class, 'settings_field_hidden']);
         }
     }
     /**
@@ -53,9 +52,9 @@ class License_Key_Setting implements Registerable, License_Setting, Core_Service
     public function process_license_action()
     {
         if ($this->is_license_action(self::ACTIVATE_KEY)) {
-            $license_setting = \filter_input(\INPUT_POST, $this->get_license_setting_name(), \FILTER_DEFAULT, \FILTER_REQUIRE_ARRAY);
+            $license_setting = filter_input(\INPUT_POST, $this->get_license_setting_name(), \FILTER_DEFAULT, \FILTER_REQUIRE_ARRAY);
             if (isset($license_setting['license'])) {
-                $license = \sanitize_text_field($license_setting['license']);
+                $license = sanitize_text_field($license_setting['license']);
                 $activated = $this->activate_license($license);
                 $this->add_settings_message(__('License key successfully activated.', 'barn2'), __('There was an error activating your license key.', 'barn2'), $activated);
             }
@@ -69,7 +68,7 @@ class License_Key_Setting implements Registerable, License_Setting, Core_Service
     }
     private function is_license_action($action)
     {
-        return isset($_SERVER['REQUEST_METHOD']) && 'POST' === $_SERVER['REQUEST_METHOD'] && $this->get_license_setting_name() === \filter_input(\INPUT_POST, $action, \FILTER_DEFAULT);
+        return isset($_SERVER['REQUEST_METHOD']) && 'POST' === $_SERVER['REQUEST_METHOD'] && $this->get_license_setting_name() === filter_input(\INPUT_POST, $action, \FILTER_DEFAULT);
     }
     public function get_license_setting_name()
     {
@@ -78,8 +77,8 @@ class License_Key_Setting implements Registerable, License_Setting, Core_Service
     private function activate_license($license_key)
     {
         // Check if we're overriding the license activation.
-        $override = \filter_input(\INPUT_POST, 'license_override', \FILTER_SANITIZE_SPECIAL_CHARS);
-        if ($override && $license_key && self::OVERRIDE_HASH === \md5($override)) {
+        $override = filter_input(\INPUT_POST, 'license_override', \FILTER_SANITIZE_SPECIAL_CHARS);
+        if ($override && $license_key && self::OVERRIDE_HASH === md5($override)) {
             $this->license->override($license_key, 'active');
             return \true;
         }
@@ -100,7 +99,7 @@ class License_Key_Setting implements Registerable, License_Setting, Core_Service
             if ($this->is_edd) {
                 $this->deferred_message = ['slug' => $slug, 'message' => $message, 'type' => $type];
             } else {
-                \add_settings_error($this->get_license_setting_name(), $slug, $message, $type);
+                add_settings_error($this->get_license_setting_name(), $slug, $message, $type);
             }
         }
     }
@@ -121,7 +120,7 @@ class License_Key_Setting implements Registerable, License_Setting, Core_Service
         if ($this->is_license_setting_readonly()) {
             $setting['custom_attributes'] = ['readonly' => 'readonly'];
         }
-        return \apply_filters('barn2_plugin_license_key_setting', $setting, $this);
+        return apply_filters('barn2_plugin_license_key_setting', $setting, $this);
     }
     /**
      * Retrieve the description for the license key input, to display on the settings page.
@@ -133,14 +132,14 @@ class License_Key_Setting implements Registerable, License_Setting, Core_Service
         $buttons = ['check' => $this->license_action_button(self::CHECK_KEY, __('Check', 'barn2')), 'activate' => $this->license_action_button(self::ACTIVATE_KEY, __('Activate', 'barn2')), 'deactivate' => $this->license_action_button(self::DEACTIVATE_KEY, __('Deactivate', 'barn2'))];
         $message = $this->license->get_status_help_text();
         if ($this->license->is_active()) {
-            $message = \sprintf('<span class="barn2-license-key-status license-active" style="color:green;">✓&nbsp;%s</span>', $message);
+            $message = sprintf('<span class="barn2-license-key-status license-active" style="color:green;">✓&nbsp;%s</span>', $message);
         } elseif ($this->license->get_license_key()) {
             // If we have a license key and it's not active, mark it red for user to take action.
             if ($this->license->is_inactive() && $this->is_license_action('deactivate_key')) {
                 // ...except if the user has just deactivated, in which case just show a plain confirmation message.
                 $message = __('License key deactivated.', 'barn2');
             } else {
-                $message = \sprintf('<span class="barn2-license-key-status license-inactive" style="color:red;">%s</span>', $message);
+                $message = sprintf('<span class="barn2-license-key-status license-inactive" style="color:red;">%s</span>', $message);
             }
         }
         if ($this->is_license_setting_readonly()) {
@@ -148,11 +147,11 @@ class License_Key_Setting implements Registerable, License_Setting, Core_Service
         } else {
             unset($buttons['check'], $buttons['deactivate']);
         }
-        return '<span class="submit">' . \implode('', $buttons) . '</span> ' . $message;
+        return '<span class="submit">' . implode('', $buttons) . '</span> ' . $message;
     }
     private function license_action_button($input_name, $button_text)
     {
-        return \sprintf('<button type="submit" class="button barn2-license-action" name="%1$s" value="%2$s" style="margin-right:4px;">%3$s</button>', \esc_attr($input_name), \esc_attr($this->get_license_setting_name()), $button_text);
+        return sprintf('<button type="submit" class="button barn2-license-action" name="%1$s" value="%2$s" style="margin-right:4px;">%3$s</button>', esc_attr($input_name), esc_attr($this->get_license_setting_name()), $button_text);
     }
     private function is_license_setting_readonly()
     {
@@ -160,15 +159,15 @@ class License_Key_Setting implements Registerable, License_Setting, Core_Service
     }
     public function get_license_override_setting()
     {
-        $override_code = \filter_input(\INPUT_GET, 'license_override', \FILTER_SANITIZE_SPECIAL_CHARS);
-        return $override_code ? ['type' => 'hidden', 'id' => 'license_override', 'default' => \sanitize_text_field($override_code)] : [];
+        $override_code = filter_input(\INPUT_GET, 'license_override', \FILTER_SANITIZE_SPECIAL_CHARS);
+        return $override_code ? ['type' => 'hidden', 'id' => 'license_override', 'default' => sanitize_text_field($override_code)] : [];
     }
     public function save_posted_license_key()
     {
         if ($this->saving_key) {
             return;
         }
-        $license_setting = \filter_input(\INPUT_POST, $this->get_license_setting_name(), \FILTER_DEFAULT, \FILTER_REQUIRE_ARRAY);
+        $license_setting = filter_input(\INPUT_POST, $this->get_license_setting_name(), \FILTER_DEFAULT, \FILTER_REQUIRE_ARRAY);
         if (!isset($license_setting['license'])) {
             return;
         }
@@ -189,11 +188,11 @@ class License_Key_Setting implements Registerable, License_Setting, Core_Service
             return $license_key;
         }
         // phpcs:ignore WordPress.Security.NonceVerification
-        if (\array_intersect([self::DEACTIVATE_KEY, self::ACTIVATE_KEY, self::CHECK_KEY], \array_keys($_POST))) {
+        if (array_intersect([self::DEACTIVATE_KEY, self::ACTIVATE_KEY, self::CHECK_KEY], array_keys($_POST))) {
             return $license_key;
         }
         $this->saving_key = \true;
-        $license_key = \sanitize_text_field($license_key);
+        $license_key = sanitize_text_field($license_key);
         // Deactivate old license key first if it was valid.
         if ($this->license->is_active() && $license_key !== $this->license->get_license_key()) {
             $this->license->deactivate();
@@ -212,7 +211,7 @@ class License_Key_Setting implements Registerable, License_Setting, Core_Service
             // Clear any other messages (e.g. 'Settings Updated') so we only show our license message.
             $wp_settings_errors = [];
             // We need to use 'edd-notices' setting to get message to show in EDD settings pages.
-            \add_settings_error('edd-notices', $this->deferred_message['slug'], $this->deferred_message['message'], $this->deferred_message['type']);
+            add_settings_error('edd-notices', $this->deferred_message['slug'], $this->deferred_message['message'], $this->deferred_message['type']);
             $this->deferred_message = [];
         }
         return $options;

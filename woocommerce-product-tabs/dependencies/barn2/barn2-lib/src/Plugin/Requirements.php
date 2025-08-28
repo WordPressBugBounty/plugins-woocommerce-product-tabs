@@ -13,7 +13,6 @@ use Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Lib\Util;
  * @author    Barn2 Plugins <support@barn2.com>
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
- * @internal
  */
 class Requirements implements Core_Service
 {
@@ -46,7 +45,7 @@ class Requirements implements Core_Service
      */
     public function get_all()
     {
-        if (\is_null($this->requirements)) {
+        if (is_null($this->requirements)) {
             $this->requirements = ['php' => $this->plugin->plugin_data()->get_required_php(), 'wp' => $this->plugin->plugin_data()->get_required_wp()];
             if ($this->plugin->is_woocommerce()) {
                 $this->requirements['wc'] = $this->plugin->plugin_data()->get_required_wc();
@@ -60,7 +59,7 @@ class Requirements implements Core_Service
      * @param string $requirement_id The requirement ID.
      * @return string|null
      */
-    public final function get(string $requirement_id)
+    final public function get(string $requirement_id)
     {
         $requirements = $this->get_all();
         return $requirements[$requirement_id] ?? null;
@@ -71,7 +70,7 @@ class Requirements implements Core_Service
      * @param bool $add_notice true to add an error notice if the requirements are not met.
      * @return bool true if all requirements are met.
      */
-    public final function check(bool $add_notice = \true) : bool
+    final public function check(bool $add_notice = \true): bool
     {
         if (!$this->check_php($add_notice)) {
             return \false;
@@ -94,21 +93,21 @@ class Requirements implements Core_Service
      * @param bool $add_notice true to add an error notice if the requirements are not met.
      * @return bool true if the requirements are met.
      */
-    public final function check_php(bool $add_notice = \true) : bool
+    final public function check_php(bool $add_notice = \true): bool
     {
         $required_php = $this->get('php');
-        if (\version_compare(\PHP_VERSION, $required_php, '<')) {
-            if (\defined('WP_CLI') && \WP_CLI) {
-                \wp_die(\sprintf(
+        if (version_compare(\PHP_VERSION, $required_php, '<')) {
+            if (defined('WP_CLI') && \WP_CLI) {
+                wp_die(sprintf(
                     /* translators: %1$s: Plugin name. %2$s: PHP version required. */
                     __('%1$s requires PHP %2$s or greater. Please update the PHP version used by your web server.', 'barn2-lib'),
                     $this->plugin->get_name(),
                     $required_php
                 ));
             }
-            if (\is_admin()) {
+            if (is_admin()) {
                 if ($add_notice) {
-                    $this->plugin->notices()->add_error_notice($this->plugin->get_slug() . '_invalid_php_version', '', \sprintf(
+                    $this->plugin->notices()->add_error_notice($this->plugin->get_slug() . '_invalid_php_version', '', sprintf(
                         /* translators: %1$s: Plugin name. %2$s: PHP version required. */
                         __('%1$s requires PHP %2$s or greater. Please update the PHP version used by your web server.', 'barn2-lib'),
                         $this->plugin->get_name(),
@@ -126,27 +125,27 @@ class Requirements implements Core_Service
      * @param bool $add_notice true to add an error notice if the requirements are not met.
      * @return bool true if the requirements are met.
      */
-    public final function check_wp(bool $add_notice = \true) : bool
+    final public function check_wp(bool $add_notice = \true): bool
     {
         global $wp_version;
         $required_wp = $this->get('wp');
-        if (\version_compare($wp_version, $required_wp, '<')) {
-            if (\defined('WP_CLI') && \WP_CLI) {
-                \wp_die(\sprintf(
+        if (version_compare($wp_version, $required_wp, '<')) {
+            if (defined('WP_CLI') && \WP_CLI) {
+                wp_die(sprintf(
                     /* translators: %1$s: Plugin name. %2$s: WP version required. */
                     __('%1$s requires WordPress %2$s or greater. Please update your WordPress installation.', 'barn2-lib'),
                     $this->plugin->get_name(),
                     $required_wp
                 ));
             }
-            if (\is_admin()) {
+            if (is_admin()) {
                 if ($add_notice) {
-                    $can_update_core = \current_user_can('update_core');
-                    $this->plugin->notices()->add_error_notice($this->plugin->get_slug() . '_invalid_wp_version', '', \sprintf(
+                    $can_update_core = current_user_can('update_core');
+                    $this->plugin->notices()->add_error_notice($this->plugin->get_slug() . '_invalid_wp_version', '', sprintf(
                         /* translators: %1$s: Plugin name. %2$s: Update Core <a> tag open. %3$s: <a> tag close. %4$s: WP version required. */
                         __('%1$s requires WordPress %4$s or greater. Please %2$supdate%3$s your WordPress installation.'),
                         $this->plugin->get_name(),
-                        $can_update_core ? \sprintf('<a href="%s">', \esc_url(\self_admin_url('update-core.php'))) : '',
+                        $can_update_core ? sprintf('<a href="%s">', esc_url(self_admin_url('update-core.php'))) : '',
                         $can_update_core ? '</a>' : '',
                         $required_wp
                     ));
@@ -162,16 +161,16 @@ class Requirements implements Core_Service
      * @param bool $add_notice true to add an error notice if the requirements are not met.
      * @return bool true if the requirements are met.
      */
-    public final function check_wc(bool $add_notice = \true) : bool
+    final public function check_wc(bool $add_notice = \true): bool
     {
-        if (!\class_exists('WooCommerce')) {
-            if (\defined('WP_CLI') && \WP_CLI) {
+        if (!class_exists('WooCommerce')) {
+            if (defined('WP_CLI') && \WP_CLI) {
                 /* translators: %1$s: Plugin name. */
-                \wp_die(\sprintf(__('%1$s requires WooCommerce to be installed and active.', 'barn2-lib'), $this->plugin->get_name()));
+                wp_die(sprintf(__('%1$s requires WooCommerce to be installed and active.', 'barn2-lib'), $this->plugin->get_name()));
             }
-            if (\is_admin()) {
+            if (is_admin()) {
                 if ($add_notice) {
-                    $this->plugin->notices()->add_error_notice($this->plugin->get_slug() . '_woocommerce_missing', '', \sprintf(
+                    $this->plugin->notices()->add_error_notice($this->plugin->get_slug() . '_woocommerce_missing', '', sprintf(
                         /* translators: %1$s: Plugin name. %2$s: WooCommerce link. %3$s Install/Upgrade/Activate WooCommerce link. */
                         __('%1$s requires %2$s to be installed and active.%3$s', 'barn2-lib'),
                         $this->plugin->get_name(),
@@ -184,14 +183,14 @@ class Requirements implements Core_Service
         }
         global $woocommerce;
         $required_wc = $this->get('wc');
-        if (\version_compare($woocommerce->version, $required_wc, '<')) {
-            if (\defined('WP_CLI') && \WP_CLI) {
+        if (version_compare($woocommerce->version, $required_wc, '<')) {
+            if (defined('WP_CLI') && \WP_CLI) {
                 /* translators: %1$s: Plugin name. %2$s: WooCommerce version required. */
-                \wp_die(\sprintf(__('%1$s requires WooCommerce %2$s or greater. Please update your WooCommerce setup first.'), $this->plugin->get_name(), $required_wc));
+                wp_die(sprintf(__('%1$s requires WooCommerce %2$s or greater. Please update your WooCommerce setup first.'), $this->plugin->get_name(), $required_wc));
             }
-            if (\is_admin()) {
+            if (is_admin()) {
                 if ($add_notice) {
-                    $this->plugin->notices()->add_error_notice($this->plugin->get_slug() . '_invalid_woocommerce_version', '', \sprintf(
+                    $this->plugin->notices()->add_error_notice($this->plugin->get_slug() . '_invalid_woocommerce_version', '', sprintf(
                         /* translators: %1$s: Plugin name. %2$s: WooCommerce link. %3$s WooCommerce version required. %4$s Install/Upgrade/Activate WooCommerce link. */
                         __('%1$s requires %2$s %3$s or greater. Please %4$s your WooCommerce setup first.'),
                         $this->plugin->get_name(),
@@ -211,16 +210,16 @@ class Requirements implements Core_Service
      * @param bool $add_notice true to add an error notice if the requirements are not met.
      * @return bool true if the requirements are met.
      */
-    public final function check_edd($add_notice = \true) : bool
+    final public function check_edd($add_notice = \true): bool
     {
-        if (!\class_exists('Easy_Digital_Downloads')) {
-            if (\defined('WP_CLI') && \WP_CLI) {
+        if (!class_exists('Easy_Digital_Downloads')) {
+            if (defined('WP_CLI') && \WP_CLI) {
                 /* translators: %1$s: Plugin name. */
-                \wp_die(\sprintf(__('%1$s requires Easy Digital Downloads to be installed and active.'), $this->plugin->get_name()));
+                wp_die(sprintf(__('%1$s requires Easy Digital Downloads to be installed and active.'), $this->plugin->get_name()));
             }
-            if (\is_admin()) {
+            if (is_admin()) {
                 if ($add_notice) {
-                    $this->plugin->notices()->add_error_notice($this->plugin->get_slug() . '_edd_missing', '', \sprintf(
+                    $this->plugin->notices()->add_error_notice($this->plugin->get_slug() . '_edd_missing', '', sprintf(
                         /* translators: %1$s: Plugin name. %2$s: EDD link. %3$s Install/Upgrade/Activate EDD link. */
                         __('%1$s requires %2$s to be installed and active.%3$s', 'barn2-lib'),
                         $this->plugin->get_name(),
