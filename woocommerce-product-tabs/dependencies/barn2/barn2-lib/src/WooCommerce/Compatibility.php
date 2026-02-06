@@ -14,6 +14,7 @@ use Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Lib\Service\Core_Service;
  * @author    Barn2 Plugins <support@barn2.com>
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
+ * @internal
  */
 class Compatibility implements Registerable, Conditional, Core_Service
 {
@@ -33,17 +34,17 @@ class Compatibility implements Registerable, Conditional, Core_Service
     }
     public function register()
     {
-        add_action('before_woocommerce_init', [$this, 'declare_woocommerce_compatibility']);
+        \add_action('before_woocommerce_init', [$this, 'declare_woocommerce_compatibility']);
     }
-    final public function get_features()
+    public final function get_features()
     {
         return FeaturesUtil::get_features();
     }
-    final public function declare_woocommerce_compatibility()
+    public final function declare_woocommerce_compatibility()
     {
-        if (class_exists(FeaturesUtil::class)) {
+        if (\class_exists(FeaturesUtil::class)) {
             $plugin_compatibility = $this->plugin->get_woocommerce_features();
-            foreach (array_keys($this->get_features()) as $feature) {
+            foreach (\array_keys($this->get_features()) as $feature) {
                 FeaturesUtil::declare_compatibility($feature, $this->plugin->get_file(), $plugin_compatibility[$feature] ?? \true);
             }
         }

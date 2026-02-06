@@ -10,6 +10,7 @@ namespace Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Lib\Admin;
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
  * @version   1.0
+ * @internal
  */
 class Notices
 {
@@ -24,7 +25,7 @@ class Notices
      */
     public function boot()
     {
-        add_action('admin_notices', [$this, 'the_notices']);
+        \add_action('admin_notices', [$this, 'the_notices']);
     }
     /**
      * Adds a notice.

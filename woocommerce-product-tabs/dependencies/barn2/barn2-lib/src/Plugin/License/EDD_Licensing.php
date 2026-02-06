@@ -10,6 +10,7 @@ namespace Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Lib\Plugin\License;
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
  * @version   1.1
+ * @internal
  */
 final class EDD_Licensing implements License_API
 {
@@ -31,7 +32,7 @@ final class EDD_Licensing implements License_API
     private static $_instance = null;
     public static function instance()
     {
-        if (is_null(self::$_instance)) {
+        if (\is_null(self::$_instance)) {
             self::$_instance = new self();
         }
         return self::$_instance;
@@ -115,11 +116,11 @@ final class EDD_Licensing implements License_API
     {
         $api_params = ['edd_action' => 'get_version', 'license' => $license_key, 'item_id' => $item_id, 'license_group' => $license_group, 'url' => $url, 'slug' => $slug, 'beta' => $beta_testing];
         $result = $this->api_request($api_params);
-        if ($result->success && is_object($result->response)) {
+        if ($result->success && \is_object($result->response)) {
             foreach ($result->response as $prop => $data) {
                 // We're forced to use the (potentially usafe) maybe_unserialize here as the
                 // EDD Software Licensing API serializes some of the returned plugin data.
-                $result->response->{$prop} = maybe_unserialize($data);
+                $result->response->{$prop} = \maybe_unserialize($data);
             }
         }
         return $result;
@@ -138,13 +139,13 @@ final class EDD_Licensing implements License_API
          * @param EDD_Licensing $instance The EDD_Licensing instance.
          * @param array         $params   The parameters to send to the API.
          */
-        $endpoint = apply_filters('barn2_edd_licensing_api_endpoint', $endpoint, $this, $params);
+        $endpoint = \apply_filters('barn2_edd_licensing_api_endpoint', $endpoint, $this, $params);
         // Call the Software Licensing API.
-        $response = wp_remote_post($endpoint, apply_filters('barn2_edd_licensing_api_request_args', ['timeout' => self::API_TIMEOUT, 'body' => $params]));
+        $response = \wp_remote_post($endpoint, \apply_filters('barn2_edd_licensing_api_request_args', ['timeout' => self::API_TIMEOUT, 'body' => $params]));
         // Build the result.
         $result = new \stdClass();
         // Check if the response is a 403 error and if we should retry
-        if (wp_remote_retrieve_response_code($response) === 403 && !$retry) {
+        if (\wp_remote_retrieve_response_code($response) === 403 && !$retry) {
             return $this->api_request($params, \true);
         }
         if (self::is_api_error($response)) {
@@ -152,20 +153,20 @@ final class EDD_Licensing implements License_API
             $result->response = self::get_api_error_message($response);
         } else {
             $result->success = \true;
-            $result->response = json_decode(wp_remote_retrieve_body($response));
+            $result->response = \json_decode(\wp_remote_retrieve_body($response));
         }
         return $result;
     }
     private static function is_api_error($response)
     {
-        return is_wp_error($response) || 200 !== wp_remote_retrieve_response_code($response);
+        return \is_wp_error($response) || 200 !== \wp_remote_retrieve_response_code($response);
     }
     private static function get_api_error_message($response)
     {
-        if (is_wp_error($response)) {
+        if (\is_wp_error($response)) {
             return $response->get_error_message();
-        } elseif (wp_remote_retrieve_response_message($response)) {
-            return wp_remote_retrieve_response_message($response);
+        } elseif (\wp_remote_retrieve_response_message($response)) {
+            return \wp_remote_retrieve_response_message($response);
         } else {
             return __('An error has occurred, please try again.', 'barn2');
         }

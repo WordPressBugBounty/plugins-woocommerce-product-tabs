@@ -40,6 +40,7 @@ use Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Lib\Traits\Plugin_Aware;
  * @author    Barn2 Plugins <support@barn2.com>
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
+ * @internal
  */
 class Includes_Files implements Core_Service, Registerable
 {
@@ -92,7 +93,7 @@ class Includes_Files implements Core_Service, Registerable
     public function include_files($path = 'inc', $pattern = '*.php')
     {
         $dir = $this->get_plugin()->get_dir_path($path);
-        $files = glob(trailingslashit($dir) . $pattern);
+        $files = \glob(\trailingslashit($dir) . $pattern);
         foreach ($files as $file) {
             require_once $file;
         }

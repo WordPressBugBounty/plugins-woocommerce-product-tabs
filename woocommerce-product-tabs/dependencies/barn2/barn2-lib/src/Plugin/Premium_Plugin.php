@@ -16,6 +16,7 @@ use Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Lib\Plugin\License\Plugin_Lic
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
  * @version   2.0
+ * @internal
  */
 class Premium_Plugin extends Simple_Plugin implements Licensed_Plugin
 {
@@ -37,8 +38,8 @@ class Premium_Plugin extends Simple_Plugin implements Licensed_Plugin
      */
     public function __construct(array $data)
     {
-        parent::__construct(array_merge(['license_setting_path' => '', 'legacy_db_prefix' => ''], $data));
-        $this->data['license_setting_path'] = ltrim($this->data['license_setting_path'], '/');
+        parent::__construct(\array_merge(['license_setting_path' => '', 'legacy_db_prefix' => ''], $data));
+        $this->data['license_setting_path'] = \ltrim($this->data['license_setting_path'], '/');
         $this->add_service('license', new Plugin_License($this->get_id(), EDD_Licensing::instance(), $this->get_legacy_db_prefix(), $this->get_license_group()));
         $this->add_service('plugin_updater', new Plugin_Updater($this, EDD_Licensing::instance()));
         $this->add_service('license_checker', new License_Checker($this->get_file(), $this->get_license()));
@@ -48,9 +49,9 @@ class Premium_Plugin extends Simple_Plugin implements Licensed_Plugin
     public function maybe_load_plugin()
     {
         if ($this->requirements()->check()) {
-            add_action('after_setup_theme', [$this, 'start_standard_services']);
+            \add_action('after_setup_theme', [$this, 'start_standard_services']);
             if ($this->get_license()->is_valid()) {
-                add_action('after_setup_theme', [$this, 'start_premium_services']);
+                \add_action('after_setup_theme', [$this, 'start_premium_services']);
             }
         }
     }
@@ -69,7 +70,7 @@ class Premium_Plugin extends Simple_Plugin implements Licensed_Plugin
     public function get_license_page_url()
     {
         // Default to plugin settings URL if there's no license setting path.
-        return !empty($this->data['license_setting_path']) ? admin_url($this->data['license_setting_path']) : parent::get_settings_page_url();
+        return !empty($this->data['license_setting_path']) ? \admin_url($this->data['license_setting_path']) : parent::get_settings_page_url();
     }
     public function get_legacy_db_prefix()
     {

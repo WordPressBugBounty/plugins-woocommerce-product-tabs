@@ -18,6 +18,7 @@ use Exception;
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
  * @version   2.0
+ * @internal
  */
 class Simple_Plugin implements Plugin, Registerable, Service_Provider
 {
@@ -47,10 +48,10 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
      */
     public function __construct(array $data)
     {
-        $this->data = array_merge(['id' => 0, 'license_group' => '', 'name' => '', 'version' => '', 'file' => null, 'is_woocommerce' => \false, 'is_edd' => \false, 'documentation_path' => '', 'settings_path' => '', 'wc_features' => []], $data);
+        $this->data = \array_merge(['id' => 0, 'license_group' => '', 'name' => '', 'version' => '', 'file' => null, 'is_woocommerce' => \false, 'is_edd' => \false, 'documentation_path' => '', 'settings_path' => '', 'wc_features' => []], $data);
         $this->data['id'] = (int) $this->data['id'];
-        $this->data['documentation_path'] = ltrim($this->data['documentation_path'], '/');
-        $this->data['settings_path'] = ltrim($this->data['settings_path'], '/');
+        $this->data['documentation_path'] = \ltrim($this->data['documentation_path'], '/');
+        $this->data['settings_path'] = \ltrim($this->data['settings_path'], '/');
         // Check for 'item_id' in case 'id' not set.
         if (!$this->get_id() && !empty($this->data['item_id'])) {
             $this->data['id'] = (int) $this->data['item_id'];
@@ -74,14 +75,14 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
     {
         $this->register_services();
         $this->start_core_services();
-        add_action('activate_' . $this->get_basename(), [$this, 'before_activate']);
-        add_action('deactivate_' . $this->get_basename(), [$this, 'before_deactivate']);
-        add_action('plugins_loaded', [$this, 'maybe_load_plugin'], 0);
+        \add_action('activate_' . $this->get_basename(), [$this, 'before_activate']);
+        \add_action('deactivate_' . $this->get_basename(), [$this, 'before_deactivate']);
+        \add_action('plugins_loaded', [$this, 'maybe_load_plugin'], 0);
     }
     public function maybe_load_plugin()
     {
         if ($this->requirements()->check()) {
-            add_action('after_setup_theme', [$this, 'start_standard_services']);
+            \add_action('after_setup_theme', [$this, 'start_standard_services']);
         }
     }
     /**
@@ -89,17 +90,17 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
      *
      * @param boolean $network_wide Whether the plugin is being activated network-wide.
      */
-    final public function before_activate($network_wide)
+    public final function before_activate($network_wide)
     {
         if (!$this->requirements()->check()) {
             return;
         }
-        if (!get_option($this->get_basename() . '_plugin_activation')) {
+        if (!\get_option($this->get_basename() . '_plugin_activation')) {
             try {
                 $this->on_first_activation($network_wide);
-                update_option($this->get_basename() . '_plugin_activation', time());
+                \update_option($this->get_basename() . '_plugin_activation', \time());
             } catch (Exception $e) {
-                $this->notices()->add_error_notice($this->get_slug() . '_activation_error', $this->get_name(), sprintf(__('%1$s could not complete its first activation because the following error occurred:<br>%2$s', 'barn2-lib'), $this->get_name(), $e->getMessage()), ['capability' => 'install_plugins', 'screens' => ['plugins']]);
+                $this->notices()->add_error_notice($this->get_slug() . '_activation_error', $this->get_name(), \sprintf(__('%1$s could not complete its first activation because the following error occurred:<br>%2$s', 'barn2-lib'), $this->get_name(), $e->getMessage()), ['capability' => 'install_plugins', 'screens' => ['plugins']]);
             }
         }
         foreach ($this->get_services() as $service) {
@@ -113,7 +114,7 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
      *
      * @param boolean $network_wide Whether the plugin is being deactivated network-wide.
      */
-    final public function before_deactivate($network_wide)
+    public final function before_deactivate($network_wide)
     {
         // No requirements check needed on deactivation.
         foreach ($this->get_services() as $service) {
@@ -147,9 +148,9 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
      */
     public function register_script($handle, $relative_path = '', $deps = [], $version = null, $in_footer = \true)
     {
-        $registered = wp_register_script($handle, $this->get_dir_url($relative_path), $deps, $version ?? $this->get_version(), $in_footer);
-        if ($registered && in_array('wp-i18n', $deps, \true)) {
-            wp_set_script_translations($handle, $this->plugin_data()->get_textdomain(), $this->get_dir_path('languages'));
+        $registered = \wp_register_script($handle, $this->get_dir_url($relative_path), $deps, $version ?? $this->get_version(), $in_footer);
+        if ($registered && \in_array('wp-i18n', $deps, \true)) {
+            \wp_set_script_translations($handle, $this->plugin_data()->get_textdomain(), $this->get_dir_path('languages'));
         }
         return $registered;
     }
@@ -158,7 +159,7 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
      *
      * $return int The plugin ID.
      */
-    final public function get_id()
+    public final function get_id()
     {
         return $this->data['id'];
     }
@@ -168,16 +169,16 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
      * @since 2.4.2
      * @return string The license group.
      */
-    final public function get_license_group()
+    public final function get_license_group()
     {
-        return strtolower($this->data['license_group'] ?? '') ?: 'default';
+        return \strtolower($this->data['license_group'] ?? '') ?: 'default';
     }
     /**
      * Get the name of this plugin.
      *
      * @return string The plugin name.
      */
-    final public function get_name()
+    public final function get_name()
     {
         return $this->plugin_data()->get_name();
     }
@@ -186,7 +187,7 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
      *
      * @return string The version number.
      */
-    final public function get_version()
+    public final function get_version()
     {
         return $this->plugin_data()->get_version();
     }
@@ -195,7 +196,7 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
      *
      * @return string The plugin file.
      */
-    final public function get_file()
+    public final function get_file()
     {
         return $this->data['file'];
     }
@@ -204,20 +205,20 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
      *
      * @return string The plugin slug.
      */
-    final public function get_slug()
+    public final function get_slug()
     {
         $dir_path = $this->get_dir_path();
-        return !empty($dir_path) ? basename($dir_path) : '';
+        return !empty($dir_path) ? \basename($dir_path) : '';
     }
     /**
      * Get the 'basename' for the plugin (e.g. my-plugin/my-plugin.php).
      *
      * @return string The plugin basename.
      */
-    final public function get_basename()
+    public final function get_basename()
     {
         if (null === $this->basename) {
-            $this->basename = !empty($this->data['file']) ? plugin_basename($this->data['file']) : '';
+            $this->basename = !empty($this->data['file']) ? \plugin_basename($this->data['file']) : '';
         }
         return $this->basename;
     }
@@ -232,12 +233,12 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
      * @since 1.3.1 Added $relative_path parameter.
      *
      */
-    final public function get_dir_path($relative_path = '')
+    public final function get_dir_path($relative_path = '')
     {
         if (null === $this->dir_path) {
-            $this->dir_path = !empty($this->data['file']) ? plugin_dir_path($this->data['file']) : '';
+            $this->dir_path = !empty($this->data['file']) ? \plugin_dir_path($this->data['file']) : '';
         }
-        return $this->dir_path . ltrim($relative_path, '/');
+        return $this->dir_path . \ltrim($relative_path, '/');
     }
     /**
      * Get the URL to the plugin folder.
@@ -250,14 +251,14 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
      * @since 1.3.1 Added $relative_path parameter.
      *
      */
-    final public function get_dir_url($relative_path = '')
+    public final function get_dir_url($relative_path = '')
     {
         if (null === $this->dir_url) {
-            $this->dir_url = !empty($this->data['file']) ? plugin_dir_url($this->data['file']) : '';
+            $this->dir_url = !empty($this->data['file']) ? \plugin_dir_url($this->data['file']) : '';
         }
-        return $this->dir_url . ltrim($relative_path, '/');
+        return $this->dir_url . \ltrim($relative_path, '/');
     }
-    final public function get_woocommerce_features()
+    public final function get_woocommerce_features()
     {
         return $this->data['wc_features'];
     }
@@ -266,7 +267,7 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
      *
      * @return boolean true if it's a WooCommerce extension.
      */
-    final public function is_woocommerce()
+    public final function is_woocommerce()
     {
         return (bool) $this->data['is_woocommerce'];
     }
@@ -275,7 +276,7 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
      *
      * @return boolean true if it's an EDD extension.
      */
-    final public function is_edd()
+    public final function is_edd()
     {
         return (bool) $this->data['is_edd'];
     }
@@ -287,8 +288,8 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
     public function get_documentation_url()
     {
         $url = Util::KNOWLEDGE_BASE_URL;
-        $url = apply_filters('barn2_kb_url', $url);
-        return esc_url($url . '/' . $this->data['documentation_path']);
+        $url = \apply_filters('barn2_kb_url', $url);
+        return \esc_url($url . '/' . $this->data['documentation_path']);
     }
     /**
      * Get the support URL for this plugin.
@@ -306,7 +307,7 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
      */
     public function get_settings_page_url()
     {
-        return !empty($this->data['settings_path']) ? admin_url($this->data['settings_path']) : '';
+        return !empty($this->data['settings_path']) ? \admin_url($this->data['settings_path']) : '';
     }
     /**
      * Get the design page URL in the WordPress admin.
@@ -315,14 +316,14 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
      */
     public function get_design_page_url()
     {
-        return !empty($this->data['design_path']) ? admin_url($this->data['design_path']) : '';
+        return !empty($this->data['design_path']) ? \admin_url($this->data['design_path']) : '';
     }
     /**
      * Get the plugin data service.
      *
      * @return Plugin_Data
      */
-    final public function plugin_data()
+    public final function plugin_data()
     {
         return $this->get_service('plugin_data');
     }
@@ -331,7 +332,7 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
      *
      * @return Requirements
      */
-    final public function requirements()
+    public final function requirements()
     {
         return $this->get_service('requirements');
     }
@@ -340,7 +341,7 @@ class Simple_Plugin implements Plugin, Registerable, Service_Provider
      *
      * @return Notice_Provider
      */
-    final public function notices()
+    public final function notices()
     {
         return $this->get_service('notices');
     }

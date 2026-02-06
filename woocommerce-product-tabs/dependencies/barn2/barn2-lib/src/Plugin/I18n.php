@@ -12,6 +12,7 @@ use Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Lib\Translatable;
  * @author    Barn2 Plugins <support@barn2.com>
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
+ * @internal
  */
 class I18n implements Registerable, Translatable, Core_Service
 {
@@ -36,7 +37,7 @@ class I18n implements Registerable, Translatable, Core_Service
      */
     public function register()
     {
-        add_action('after_setup_theme', array($this, 'load_textdomain'));
+        \add_action('after_setup_theme', array($this, 'load_textdomain'));
     }
     /**
      * Load the plugin's textdomain.
@@ -45,6 +46,6 @@ class I18n implements Registerable, Translatable, Core_Service
      */
     public function load_textdomain()
     {
-        load_plugin_textdomain($this->plugin->plugin_data()->get_textdomain(), \false, dirname(plugin_basename($this->plugin->get_file())) . '/languages');
+        \load_plugin_textdomain($this->plugin->plugin_data()->get_textdomain(), \false, \dirname(\plugin_basename($this->plugin->get_file())) . '/languages');
     }
 }

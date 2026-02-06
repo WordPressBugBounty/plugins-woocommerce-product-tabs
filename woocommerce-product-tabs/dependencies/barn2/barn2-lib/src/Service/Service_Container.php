@@ -11,6 +11,7 @@ use Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Lib\Util;
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
  * @version   2.0
+ * @internal
  */
 trait Service_Container
 {
@@ -35,11 +36,11 @@ trait Service_Container
      *
      * @return void
      */
-    final public function register_services(): void
+    public final function register_services() : void
     {
         $this->add_services();
         foreach ($this->services_classes as $services_class) {
-            add_action($this->get_services_action_name($services_class), function ($class) {
+            \add_action($this->get_services_action_name($services_class), function ($class) {
                 $this->register_services_by_class($class);
             });
         }
@@ -49,7 +50,7 @@ trait Service_Container
      *
      * @return array
      */
-    final public function get_services(): array
+    public final function get_services() : array
     {
         return $this->services;
     }
@@ -59,7 +60,7 @@ trait Service_Container
      * @param string $id The service ID.
      * @return mixed The service instance.
      */
-    final public function get_service($id)
+    public final function get_service($id)
     {
         $services = $this->get_services();
         return $services[$id] ?? null;
@@ -82,7 +83,7 @@ trait Service_Container
      * @param mixed  $service The service instance.
      * @return void
      */
-    final public function add_service(string $id, Service $service): void
+    public final function add_service(string $id, Service $service) : void
     {
         if ($this->valid_service_id($id)) {
             $this->services[$id] = $service;
@@ -129,7 +130,7 @@ trait Service_Container
      */
     private function get_services_action_name(string $service_class)
     {
-        return md5(get_class($this)) . "_register_{$service_class}";
+        return \md5(\get_class($this)) . "_register_{$service_class}";
     }
     /**
      * Register the services of a specific class.
@@ -137,10 +138,10 @@ trait Service_Container
      * @param string $class The class name.
      * @return void
      */
-    private function register_services_by_class($class): void
+    private function register_services_by_class($class) : void
     {
-        Util::register_services(array_filter($this->get_services(), function ($service) use ($class) {
-            return is_a($service, $class);
+        Util::register_services(\array_filter($this->get_services(), function ($service) use($class) {
+            return \is_a($service, $class);
         }));
     }
     /**
@@ -149,9 +150,9 @@ trait Service_Container
      * @param string $service_class The service class name.
      * @return void
      */
-    private function start_services(string $service_class): void
+    private function start_services(string $service_class) : void
     {
-        do_action($this->get_services_action_name($service_class), $service_class);
+        \do_action($this->get_services_action_name($service_class), $service_class);
     }
     /**
      * Determine whether a service ID is already registered.

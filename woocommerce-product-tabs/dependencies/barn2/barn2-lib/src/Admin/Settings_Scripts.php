@@ -12,6 +12,7 @@ use Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Lib\Registerable;
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
  * @version   1.0
+ * @internal
  */
 class Settings_Scripts implements Registerable
 {
@@ -35,16 +36,16 @@ class Settings_Scripts implements Registerable
      */
     public function register()
     {
-        add_action('admin_enqueue_scripts', [$this, 'load_scripts'], 5);
+        \add_action('admin_enqueue_scripts', [$this, 'load_scripts'], 5);
     }
     /**
      * Load any scripts required by settings fields.
      */
     public function load_scripts()
     {
-        if (!wp_script_is('barn2-tiptip', 'registered')) {
-            wp_register_script('barn2-tiptip', plugins_url('dependencies/barn2/barn2-lib/build/js/jquery-tiptip/jquery.tipTip.js', $this->plugin->get_file()), ['jquery'], $this->plugin->get_version(), \true);
-            wp_register_style('barn2-tooltip', plugins_url('dependencies/barn2/barn2-lib/build/css/tooltip-styles.css', $this->plugin->get_file()), [], $this->plugin->get_version());
+        if (!\wp_script_is('barn2-tiptip', 'registered')) {
+            \wp_register_script('barn2-tiptip', \plugins_url('dependencies/barn2/barn2-lib/build/js/jquery-tiptip/jquery.tipTip.js', $this->plugin->get_file()), ['jquery'], $this->plugin->get_version(), \true);
+            \wp_register_style('barn2-tooltip', \plugins_url('dependencies/barn2/barn2-lib/build/css/tooltip-styles.css', $this->plugin->get_file()), [], $this->plugin->get_version());
         }
     }
 }

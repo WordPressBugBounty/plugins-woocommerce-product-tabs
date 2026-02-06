@@ -11,6 +11,7 @@ namespace Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Setup_Wizard;
 use Barn2\Plugin\WC_Product_Tabs_Free\Dependencies\Setup_Wizard\Interfaces\Pluggable;
 /**
  * Handles configuration of a setup wizard step.
+ * @internal
  */
 abstract class Step implements Pluggable
 {
@@ -76,14 +77,14 @@ abstract class Step implements Pluggable
      */
     public function __construct()
     {
-        add_action('after_setup_theme', [$this, 'init']);
+        \add_action('after_setup_theme', [$this, 'init']);
     }
     /**
      * Initialize the step.
      *
      * @return void
      */
-    abstract public function init();
+    public abstract function init();
     /**
      * Set the request object.
      *
@@ -149,7 +150,7 @@ abstract class Step implements Pluggable
      *
      * @return array
      */
-    abstract public function setup_fields();
+    public abstract function setup_fields();
     /**
      * Get the list of defined fields for the step.
      *
@@ -300,14 +301,14 @@ abstract class Step implements Pluggable
         $values = [];
         foreach ($this->get_fields() as $key => $field) {
             $disallowed = ['title', 'heading', 'list', 'image'];
-            if (in_array($field['type'], $disallowed, \true)) {
+            if (\in_array($field['type'], $disallowed, \true)) {
                 continue;
             }
             // Using wp_unslash since WP adds slashes to all $_POST data. Nonce verification
             // is expected earlier via the REST API permission callback.
             if (isset($_POST[$key]) && '' !== $_POST[$key]) {
                 // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                $raw = wp_unslash($_POST[$key]);
+                $raw = \wp_unslash($_POST[$key]);
                 // phpcs:ignore WordPress.Security.NonceVerification.Missing
                 $values[$key] = Util::clean($raw);
             }
@@ -319,5 +320,5 @@ abstract class Step implements Pluggable
      *
      * @return \WP_REST_Response
      */
-    abstract public function submit(array $values);
+    public abstract function submit(array $values);
 }

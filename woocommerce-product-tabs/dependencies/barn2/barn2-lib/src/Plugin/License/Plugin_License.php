@@ -14,6 +14,7 @@ use DateTime;
  * @license   GPL-3.0
  * @copyright Barn2 Media Ltd
  * @version   1.2.1
+ * @internal
  */
 class Plugin_License implements Registerable, License, Core_Service
 {
@@ -36,13 +37,13 @@ class Plugin_License implements Registerable, License, Core_Service
     {
         $this->item_id = (int) $item_id;
         $this->license_api = $license_api;
-        $this->legacy_db_prefix = rtrim($legacy_db_prefix, '_');
+        $this->legacy_db_prefix = \rtrim($legacy_db_prefix, '_');
         $this->license_option = 'barn2_plugin_license_' . $this->item_id;
         $this->license_group = $license_group;
     }
     public function register()
     {
-        add_action('plugins_loaded', [$this, 'migrate_legacy_license'], 0);
+        \add_action('plugins_loaded', [$this, 'migrate_legacy_license'], 0);
         // early, before any is_valid() checks.
     }
     public function get_item_id()
@@ -51,13 +52,13 @@ class Plugin_License implements Registerable, License, Core_Service
     }
     public function exists()
     {
-        return get_option($this->license_option) ? \true : \false;
+        return \get_option($this->license_option) ? \true : \false;
     }
     public function is_valid()
     {
         // A 'valid' license is one which is active or expired.
         // For expired licenses the plugin will still work (i.e. is valid) but plugin updates will be disabled.
-        return $this->get_license_key() && in_array($this->get_status(), ['active', 'expired']);
+        return $this->get_license_key() && \in_array($this->get_status(), ['active', 'expired']);
     }
     public function is_active()
     {
@@ -145,7 +146,11 @@ class Plugin_License implements Registerable, License, Core_Service
                 if (isset($response->bonus_downloads)) {
                     $license_data['bonus_downloads'] = $response->bonus_downloads;
                 }
-                do_action("barn2_license_activated_{$this->item_id}", $license_key, $url_to_activate);
+                // Store allowed domains if provided by API (for multidomain support)
+                if (isset($response->allowed_domains) && \is_array($response->allowed_domains)) {
+                    $license_data['allowed_domains'] = $response->allowed_domains;
+                }
+                \do_action("barn2_license_activated_{$this->item_id}", $license_key, $url_to_activate);
             } else {
                 // Invalid license.
                 $license_data['error_code'] = isset($response->error) ? $response->error : 'error';
@@ -168,7 +173,7 @@ class Plugin_License implements Registerable, License, Core_Service
          * @param array   $license_data     The license data after activation.
          * @param boolean $result           Whether the activation was successful.
          */
-        do_action("barn2_license_after_activate_{$this->item_id}", $license_key, $url_to_activate, $license_data, $result);
+        \do_action("barn2_license_after_activate_{$this->item_id}", $license_key, $url_to_activate, $license_data, $result);
         return $result;
     }
     /**
@@ -212,7 +217,7 @@ class Plugin_License implements Registerable, License, Core_Service
                 // In this case we refresh license data to ensure we have correct state stored in database.
                 $this->refresh();
             }
-            do_action("barn2_license_deactivated_{$this->item_id}", $license_key, $url_to_deactivate);
+            \do_action("barn2_license_deactivated_{$this->item_id}", $license_key, $url_to_deactivate);
         } else {
             // API error
             $license_data['error_code'] = 'error';
@@ -227,7 +232,7 @@ class Plugin_License implements Registerable, License, Core_Service
          * @param array   $license_data        The license data after deactivation.
          * @param boolean $result              Whether the deactivation was successful.
          */
-        do_action("barn2_license_after_deactivate_{$this->item_id}", $license_key, $url_to_deactivate, $license_data, $result);
+        \do_action("barn2_license_after_deactivate_{$this->item_id}", $license_key, $url_to_deactivate, $license_data, $result);
         return $result;
     }
     /**
@@ -262,6 +267,10 @@ class Plugin_License implements Registerable, License, Core_Service
                 if (isset($response->bonus_downloads)) {
                     $license_data['bonus_downloads'] = $response->bonus_downloads;
                 }
+                // Store allowed domains if provided by API
+                if (isset($response->allowed_domains) && \is_array($response->allowed_domains)) {
+                    $license_data['allowed_domains'] = $response->allowed_domains;
+                }
             } else {
                 // Invalid license - $response->license will contain the reason for the invalid license - e.g. expired, inactive, site_inactive, etc.
                 $license_data['error_code'] = $response->license;
@@ -269,7 +278,7 @@ class Plugin_License implements Registerable, License, Core_Service
             }
             // Store returned license info.
             $license_data['license_info'] = $this->format_license_info($response);
-            do_action("barn2_license_refreshed_{$this->item_id}", $license_key, $url_to_refresh);
+            \do_action("barn2_license_refreshed_{$this->item_id}", $license_key, $url_to_refresh);
         } else {
             // API error - store the error but don't change license status (e.g. temporary communication error).
             $license_data['error_code'] = 'error';
@@ -288,7 +297,7 @@ class Plugin_License implements Registerable, License, Core_Service
          * @param array   $license_data        The license data after refresh.
          * @param boolean $result              Whether the refresh was successful.
          */
-        do_action("barn2_license_after_refresh_{$this->item_id}", $license_key, $url_to_refresh, $license_data, $result);
+        \do_action("barn2_license_after_refresh_{$this->item_id}", $license_key, $url_to_refresh, $license_data, $result);
     }
     public function override($license_key, $status)
     {
@@ -298,7 +307,7 @@ class Plugin_License implements Registerable, License, Core_Service
         $url_to_activate = $this->get_home_url();
         $license_data = ['license' => $license_key, 'url' => $url_to_activate, 'status' => $status, 'override' => \true];
         $this->set_license_data($license_data);
-        do_action("barn2_license_activated_{$this->item_id}", $license_key, $url_to_activate);
+        \do_action("barn2_license_activated_{$this->item_id}", $license_key, $url_to_activate);
         /**
          * Fires after the license has been overridden.
          *
@@ -312,7 +321,7 @@ class Plugin_License implements Registerable, License, Core_Service
          * @param array  $license_data        The license data after override.
          * @param bool   $result              Whether the override was successful. Always true
          */
-        do_action("barn2_license_after_override_{$this->item_id}", $license_key, $url_to_activate, $license_data, \true);
+        \do_action("barn2_license_after_override_{$this->item_id}", $license_key, $url_to_activate, $license_data, \true);
     }
     public function get_setting_name()
     {
@@ -332,7 +341,7 @@ class Plugin_License implements Registerable, License, Core_Service
         $license_info = $this->get_license_info();
         switch ($this->get_error_code()) {
             case 'missing':
-                $message = sprintf(
+                $message = \sprintf(
                     /* translators: 1: account page link start, 2: account page link end */
                     __('Invalid license key - please check your order confirmation email or %1$sAccount%2$s.', 'barn2'),
                     Util::format_store_link_open('account'),
@@ -356,13 +365,13 @@ class Plugin_License implements Registerable, License, Core_Service
                 $limit = '';
                 if (isset($license_info['max_sites'])) {
                     /* translators: %s: The number of sites the license is activated on */
-                    $limit = sprintf(_n('%s site active', '%s sites active', absint($license_info['max_sites']), 'barn2'), $license_info['max_sites']);
+                    $limit = \sprintf(_n('%s site active', '%s sites active', \absint($license_info['max_sites']), 'barn2'), $license_info['max_sites']);
                 }
                 /* translators: %s: The sites active description, e.g. '2 sites active' */
-                $message = sprintf(__('Your license key has reached its activation limit (%s).', 'barn2'), $limit);
+                $message = \sprintf(__('Your license key has reached its activation limit (%s).', 'barn2'), $limit);
                 $read_more_link = Util::format_store_link('kb/license-key-problems', __('Read more', 'barn2'));
                 /* translators: support for RTL, 1: the license error, 2: a link */
-                $message = sprintf(__('%1$s %2$s', 'barn2'), $message, $read_more_link);
+                $message = \sprintf(__('%1$s %2$s', 'barn2'), $message, $read_more_link);
                 break;
             case 'inactive':
             case 'site_inactive':
@@ -372,15 +381,15 @@ class Plugin_License implements Registerable, License, Core_Service
                 $message = $this->get_license_expired_message();
                 // See if we have a valid expiry date by checking first 4 chars are numbers (the expiry year).
                 // This is only a rough check - createFromFormat() will validate fully and return a DateTime object if valid.
-                if (!empty($license_info['expires']) && is_numeric(substr($license_info['expires'], 0, 4))) {
+                if (!empty($license_info['expires']) && \is_numeric(\substr($license_info['expires'], 0, 4))) {
                     if ($expiry_datetime = DateTime::createFromFormat('Y-m-d H:i:s', $license_info['expires'])) {
                         /* translators: %s: The license expiry date */
-                        $message = sprintf(__('Your license key expired on %s.', 'barn2'), $expiry_datetime->format(get_option('date_format')));
+                        $message = \sprintf(__('Your license key expired on %s.', 'barn2'), $expiry_datetime->format(\get_option('date_format')));
                     }
                 }
                 $renewal_link = Util::format_link($this->get_renewal_url(), __('Renew now for 20% discount.', 'barn2'), \true);
                 /* translators: support for RTL, 1: the license error, 2: a link */
-                $message = sprintf(__('%1$s %2$s', 'barn2'), $message, $renewal_link);
+                $message = \sprintf(__('%1$s %2$s', 'barn2'), $message, $renewal_link);
                 break;
             case 'disabled':
                 $message = $this->get_license_disabled_message();
@@ -411,7 +420,26 @@ class Plugin_License implements Registerable, License, Core_Service
         if ($this->is_license_overridden()) {
             return \false;
         }
-        $has_moved = $active_url !== $this->get_home_url();
+        $current_url = $this->get_home_url();
+        $has_moved = $active_url !== $current_url;
+        // If domain appears to have changed, check if current domain is in allowed domains list
+        if ($has_moved) {
+            $license_data = $this->get_license_data();
+            // Check if API provided a list of allowed domains (for multidomain setups)
+            if (!empty($license_data['allowed_domains']) && \is_array($license_data['allowed_domains'])) {
+                // Clean current URL for comparison
+                $cleaned_current = $this->clean_license_url(\get_option('home'));
+                // Check if current domain is in the allowed list
+                foreach ($license_data['allowed_domains'] as $allowed_domain) {
+                    $cleaned_allowed = $this->clean_license_url($allowed_domain);
+                    if ($cleaned_current === $cleaned_allowed) {
+                        // Current domain is in allowed list, not actually moved
+                        $has_moved = \false;
+                        break;
+                    }
+                }
+            }
+        }
         if ($has_moved && $this->is_active()) {
             $this->set_site_inactive();
         }
@@ -419,7 +447,7 @@ class Plugin_License implements Registerable, License, Core_Service
     }
     public function get_renewal_url($apply_discount = \true)
     {
-        $discount_string = $apply_discount ? base64_decode(self::RENEWAL_STRING) : '';
+        $discount_string = $apply_discount ? \base64_decode(self::RENEWAL_STRING) : '';
         $license_info = $this->get_license_info();
         if (!empty($license_info['item_id'])) {
             $price_id = !empty($license_info['price_id']) ? $license_info['price_id'] : 0;
@@ -436,11 +464,11 @@ class Plugin_License implements Registerable, License, Core_Service
         if ($this->exists()) {
             return;
         }
-        $license_key = get_option($this->legacy_db_prefix . '_license_key');
-        if ($license_key && is_string($license_key)) {
+        $license_key = \get_option($this->legacy_db_prefix . '_license_key');
+        if ($license_key && \is_string($license_key)) {
             // Migrate from legacy license data.
             $data = ['license' => $license_key, 'url' => $this->get_home_url()];
-            $status = get_option($this->legacy_db_prefix . '_license_status');
+            $status = \get_option($this->legacy_db_prefix . '_license_status');
             if ('valid' === $status) {
                 $data['status'] = 'active';
             } elseif ('deactivated' === $status) {
@@ -449,10 +477,10 @@ class Plugin_License implements Registerable, License, Core_Service
                 $data['status'] = 'invalid';
             }
             // Remove legacy license data.
-            delete_option($this->legacy_db_prefix . '_license_key');
-            delete_option($this->legacy_db_prefix . '_license_status');
-            delete_option($this->legacy_db_prefix . '_license_error');
-            delete_option($this->legacy_db_prefix . '_license_debug');
+            \delete_option($this->legacy_db_prefix . '_license_key');
+            \delete_option($this->legacy_db_prefix . '_license_status');
+            \delete_option($this->legacy_db_prefix . '_license_error');
+            \delete_option($this->legacy_db_prefix . '_license_debug');
             $this->set_license_data($data);
         }
     }
@@ -460,7 +488,7 @@ class Plugin_License implements Registerable, License, Core_Service
     {
         if (null === $this->home_url) {
             // We don't use home_url() here as this runs the 'home_url' filter which other plugins hook into (e.g. multi-lingual plugins).
-            $this->home_url = $this->clean_license_url(get_option('home'));
+            $this->home_url = $this->clean_license_url(\get_option('home'));
         }
         return $this->home_url;
     }
@@ -478,13 +506,13 @@ class Plugin_License implements Registerable, License, Core_Service
             return $url;
         }
         // To lowercase.
-        $url = strtolower($url);
+        $url = \strtolower($url);
         // Strip www.
-        $url = str_replace(['://www.', ':/www.'], '://', $url);
+        $url = \str_replace(['://www.', ':/www.'], '://', $url);
         // Strip scheme.
-        $url = str_replace(['http://', 'https://', 'http:/', 'https:/'], '', $url);
+        $url = \str_replace(['http://', 'https://', 'http:/', 'https:/'], '', $url);
         // Remove trailing slash.
-        $url = untrailingslashit($url);
+        $url = \untrailingslashit($url);
         return $url;
     }
     public function is_license_overridden()
@@ -494,23 +522,23 @@ class Plugin_License implements Registerable, License, Core_Service
     }
     private function get_default_data()
     {
-        return ['license' => '', 'status' => 'invalid', 'url' => '', 'error_code' => '', 'error_message' => '', 'license_info' => []];
+        return ['license' => '', 'status' => 'invalid', 'url' => '', 'error_code' => '', 'error_message' => '', 'license_info' => [], 'allowed_domains' => []];
     }
     private function get_license_data()
     {
         if (null === $this->license_data) {
-            $license = get_option($this->license_option, $this->get_default_data());
-            if (is_scalar($license)) {
+            $license = \get_option($this->license_option, $this->get_default_data());
+            if (\is_scalar($license)) {
                 $license = ['license' => $license];
             }
-            $this->license_data = array_merge($this->get_default_data(), (array) $license);
+            $this->license_data = \array_merge($this->get_default_data(), (array) $license);
         }
         return $this->license_data;
     }
     private function set_license_data(array $data)
     {
         $this->license_data = $this->sanitize_license_data($data);
-        update_option($this->license_option, $this->license_data, \false);
+        \update_option($this->license_option, $this->license_data, \false);
     }
     private function update_license_data(array $data)
     {
@@ -519,12 +547,12 @@ class Plugin_License implements Registerable, License, Core_Service
         $license_data['error_code'] = '';
         $license_data['error_message'] = '';
         // Merge current data with new $data before setting.
-        $this->set_license_data(array_merge($license_data, $data));
+        $this->set_license_data(\array_merge($license_data, $data));
     }
     private function sanitize_license_data(array $data)
     {
         $default_data = $this->get_default_data();
-        $data = array_merge($default_data, $data);
+        $data = \array_merge($default_data, $data);
         if (!$this->is_valid_status($data['status'])) {
             $data['status'] = $default_data['status'];
         }
@@ -566,15 +594,15 @@ class Plugin_License implements Registerable, License, Core_Service
     }
     private function is_valid_status($status)
     {
-        return $status && in_array($status, ['active', 'inactive', 'expired', 'disabled', 'invalid']);
+        return $status && \in_array($status, ['active', 'inactive', 'expired', 'disabled', 'invalid']);
     }
     private function to_license_status($api_license_status)
     {
         if ('valid' === $api_license_status) {
             return 'active';
-        } elseif (in_array($api_license_status, ['inactive', 'site_inactive'])) {
+        } elseif (\in_array($api_license_status, ['inactive', 'site_inactive'])) {
             return 'inactive';
-        } elseif (in_array($api_license_status, ['expired', 'disabled'])) {
+        } elseif (\in_array($api_license_status, ['expired', 'disabled'])) {
             return $api_license_status;
         }
         return 'invalid';
@@ -589,7 +617,7 @@ class Plugin_License implements Registerable, License, Core_Service
     }
     private function get_license_disabled_message()
     {
-        return sprintf(
+        return \sprintf(
             /* translators: 1: purchase link start, 2: purchase link end. */
             __('Your license key has been disabled. Please %1$spurchase a new license key%2$s to continue using the plugin.', 'barn2'),
             Util::format_link_open($this->get_renewal_url(\false), \true),
